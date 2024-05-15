@@ -1,10 +1,12 @@
+import coreExtensionModuleUrl from "./AppCoreExtensions.js?importChunkUrl";
+
 import {
   MainCoreDriver,
   RendererMain
 } from '@lightningjs/renderer';
 
-import { colours, adjectives, nouns } from '../data/data';
-import { warmup } from '../utils/warmup';
+import { colours, adjectives, nouns } from '../../shared/data';
+import { warmup } from '../../shared/utils/warmup';
 
 const appHeight = 1080;
 const appWidth = 1900;
@@ -15,6 +17,7 @@ const renderer = new RendererMain({
     appHeight: appHeight,
     clearColor: 0x00000000,
     enableInspector: false,
+    coreExtensionModule: coreExtensionModuleUrl,
 }, 'app', driver);
 
 await renderer.init();
@@ -48,7 +51,7 @@ const createRow = (parent, config = {}) => {
         parent: holder,
         text: text,
         alpha: 0.8,
-        fontFamily: 'Ubuntu-ssdf',
+        fontFamily: 'Ubuntu',
         color: textColor || 0xFFFFFFFF,
         fontSize: 26,
     });

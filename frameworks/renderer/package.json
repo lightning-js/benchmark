@@ -7,10 +7,14 @@
     "build": "vite build"
   },
   "author": "",
+  "type": "module",
   "license": "MIT",
   "description": "",
   "dependencies": {
     "@lightningjs/renderer": "^0.8.4",
-    "vite": "^5.2.11"
+    "@lightningjs/vite-plugin-import-chunk-url": "^0.3.1"
+  },
+  "devDependencies": {
+    "vite": "^4.5.0"
   }
 }

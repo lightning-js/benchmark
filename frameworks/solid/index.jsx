@@ -6,8 +6,8 @@ import {
   For,
 } from "solid-js";
 import { render, Text, View, hexColor, Config } from "@lightningjs/solid";
-import { colours, adjectives, nouns } from '../data/data';
-import { warmup } from "../utils/warmup";
+import { colours, adjectives, nouns } from '../../shared/data';
+import { warmup } from "../../shared/utils/warmup";
 
 Config.debug = false;
 Config.animationsEnabled = true;

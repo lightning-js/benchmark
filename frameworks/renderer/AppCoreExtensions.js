@@ -8,8 +8,8 @@ export default class AppCoreExtension extends CoreExtension {
         {},
         "msdf",
         stage,
-        "/fonts/Ubuntu-Bold.msdf.png",
-        "/fonts/Ubuntu-Bold.msdf.json"
+        "./fonts/Ubuntu-Bold.msdf.png",
+        "./fonts/Ubuntu-Bold.msdf.json"
       )
     );
   }
