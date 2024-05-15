@@ -4,6 +4,7 @@ import {
 } from '@lightningjs/renderer';
 
 import { colours, adjectives, nouns } from '../data/data';
+import { warmup } from '../utils/warmup';
 
 const appHeight = 1080;
 const appWidth = 1900;
@@ -139,6 +140,8 @@ const appendMany = (amount = 1000) => {
 const updateMany = (count, skip = 0) => {
     return new Promise((resolve) => {
         // slice count from parentNode's children
+        const updateManyPerf = performance.now();
+
         let children;
         if (skip < 0) {
             children = rootNode.children.slice(0, count);
@@ -147,7 +150,7 @@ const updateMany = (count, skip = 0) => {
             children = rootNode.children.filter((_, i) => i % (skip + 1) === 0).slice(0, count);
         }
 
-        const updateManyPerf = performance.now();
+
         for (let i = 0; i < children.length; i++) {
             const child = children[i];
             child.color = pick(colours);
@@ -168,7 +171,7 @@ const updateMany = (count, skip = 0) => {
     });
 }
 
-const swapRows = (count) => {
+const swapRows = () => {
     return new Promise((resolve) => {
         if (rootNode.children.length < 998) {
             return resolve();
@@ -243,34 +246,6 @@ const removeRow = () => {
             const time = performance.now() - removePerf;
             resolve({ time });
         });
-    });
-}
-
-
-// warmup
-let i = 0;
-const warmup = (fn, argument, count = 5) => {
-    return new Promise((resolve) => {
-        const runWarmup = (fn, argument, count) => {
-            // check if arguments is an array
-            if (!Array.isArray(argument)) {
-                argument = [argument];
-            }
-
-            fn(...argument).then(() => {
-                i++;
-                if (i < count) {
-                    return setTimeout(() => {
-                        runWarmup(fn, argument, count);
-                    }, 100);
-                }
-    
-                i = 0;
-                resolve();
-            });
-        }
-
-        runWarmup(fn, argument, count);
     });
 }
 
