@@ -27,8 +27,10 @@ let rootNode = renderer.createNode({
   parent: renderer.root,
 });
 
-let lastX = 10;
-let lastY = 10;
+
+// get hash of the url
+const hash = window.location.hash.substring(1);
+
 
 const pick = dict => dict[Math.round(Math.random() * 1000) % dict.length];
 
@@ -59,6 +61,24 @@ const createRow = (parent, config = {}) => {
         color: textColor || 0xFFFFFFFF,
         fontSize: 26,
     });
+}
+
+const createRowWithoutText = (parent, config = {}) => {
+    const { color, index } = config;
+
+    const x = index % 216 * 4
+    const y  = ~~( index / 216 ) * 4
+
+    const node = renderer.createNode({
+        x: x,
+        y: y,
+        width: 4,
+        height: 4,
+        color: color || 0x00000000,
+        parent: parent || rootNode,
+    });
+
+    return node;
 }
 
 const clear = () => {
@@ -205,59 +225,103 @@ const removeRow = () => {
     });
 }
 
-const results = {};
+const createManyWithoutText = (amount = 20000) => {
+    return new Promise((resolve) => {
+        clear().then(() => {
+            const createPerf = performance.now();
+            renderer.once('idle', () => {
+                const time = performance.now() - createPerf;
+                resolve({ time });
+            });
 
-await warmup(createMany, 1000, 5);
-const createRes = await createMany(1000)
-results.create = createRes.time.toFixed(2);
+            [...Array(amount)].map((_, i) => {
+                createRowWithoutText(rootNode, {
+                    index: i,
+                    color: pick(colours),
+                });
+            });
+        });
+    });
+}
 
-await createMany(1000);
-await warmup(updateMany, 1000, 5);
-await createMany(1000);
-const updateManyRes = await updateMany(1000);
-results.update = updateManyRes.time.toFixed(2);
 
-await createMany(1000);
-await warmup(updateMany, [1000, 10], 5);
-await createMany(1000);
-const skipNthRes = await updateMany(1000, 10);
-results.skipNth = skipNthRes.time.toFixed(2);
+const createMemoryBenchmark = async () => {
+    const results = {};
 
-await createMany(1000);
-await warmup(selectRandomNode, undefined, 5);
-await createMany(1000);
-const selectRes = await selectRandomNode();
-results.select = selectRes.time.toFixed(2);
+    await warmup(createManyWithoutText, 20000, 5);
+    const createRes = await createManyWithoutText(20000)
+    results.create = createRes.time.toFixed(2);
 
-await createMany(1000);
-await warmup(swapRows, undefined, 5);
-await createMany(1000);
-const swapRes = await swapRows();
-results.swap = swapRes.time.toFixed(2);
+    Object.keys(results).forEach(key => {
+        console.log(`${key}: ${results[key]}ms`);
+    });
 
-await createMany(1000);
-await warmup(removeRow, undefined, 5);
-await createMany(1000);
-const removeRes = await removeRow();
-results.remove = removeRes.time.toFixed(2);
+    // save it for the results page
+    localStorage.setItem('renderer-memory', JSON.stringify(results));
+}
 
-await warmup(createMany, 10000, 5);
-const createResLots = await createMany(10000)
-results.createLots = createResLots.time.toFixed(2);
+const runBenchmark = async () => {
+    const results = {};
 
-await clear();
-await warmup(appendMany, 1000, 5);
-await createMany(1000);
-const appendRes = await appendMany(1000);
-results.append = appendRes.time.toFixed(2);
+    await warmup(createMany, 1000, 5);
+    const createRes = await createMany(1000)
+    results.create = createRes.time.toFixed(2);
 
-await warmup(createMany, 1000, 5);
-const clearRes = await clear();
-results.clear = clearRes.time.toFixed(2);
+    await createMany(1000);
+    await warmup(updateMany, 1000, 5);
+    await createMany(1000);
+    const updateManyRes = await updateMany(1000);
+    results.update = updateManyRes.time.toFixed(2);
 
-Object.keys(results).forEach(key => {
-    console.log(`${key}: ${results[key]}ms`);
-});
+    await createMany(1000);
+    await warmup(updateMany, [1000, 10], 5);
+    await createMany(1000);
+    const skipNthRes = await updateMany(1000, 10);
+    results.skipNth = skipNthRes.time.toFixed(2);
 
-// save it for the results page
-localStorage.setItem('renderer', JSON.stringify(results));
+    await createMany(1000);
+    await warmup(selectRandomNode, undefined, 5);
+    await createMany(1000);
+    const selectRes = await selectRandomNode();
+    results.select = selectRes.time.toFixed(2);
+
+    await createMany(1000);
+    await warmup(swapRows, undefined, 5);
+    await createMany(1000);
+    const swapRes = await swapRows();
+    results.swap = swapRes.time.toFixed(2);
+
+    await createMany(1000);
+    await warmup(removeRow, undefined, 5);
+    await createMany(1000);
+    const removeRes = await removeRow();
+    results.remove = removeRes.time.toFixed(2);
+
+    await warmup(createMany, 10000, 5);
+    const createResLots = await createMany(10000)
+    results.createLots = createResLots.time.toFixed(2);
+
+    await clear();
+    await warmup(appendMany, 1000, 5);
+    await createMany(1000);
+    const appendRes = await appendMany(1000);
+    results.append = appendRes.time.toFixed(2);
+
+    await warmup(createMany, 1000, 5);
+    const clearRes = await clear();
+    results.clear = clearRes.time.toFixed(2);
+
+    Object.keys(results).forEach(key => {
+        console.log(`${key}: ${results[key]}ms`);
+    });
+
+    // save it for the results page
+    localStorage.setItem('renderer', JSON.stringify(results));
+}
+
+if (hash === 'memory') {
+    console.log('Running memory benchmark');
+    createMemoryBenchmark();
+} else {
+    runBenchmark();
+}
