@@ -28,10 +28,6 @@ let rootNode = renderer.createNode({
 });
 
 
-// get hash of the url
-const hash = window.location.hash.substring(1);
-
-
 const pick = dict => dict[Math.round(Math.random() * 1000) % dict.length];
 
 const createRow = (parent, config = {}) => {
@@ -106,16 +102,14 @@ const createMany = (amount = 1000) => {
                 resolve({ time });
             });
 
-            [...Array(amount)].map((_, i) => {
+            for (let i = 0; i < amount; i++) {
                 createRow(rootNode, {
                     index: i,
                     color: pick(colours),
                     textColor: pick(colours),
                     text: `${pick(adjectives)} ${pick(nouns)}`
                 });
-            });
-
-
+            }
         });
     });
 }
@@ -128,16 +122,14 @@ const appendMany = (amount = 1000) => {
             resolve({ time });
         });
 
-        [...Array(amount)].map((_, i) => {
+        for (let i = 0; i < amount; i++) {
             createRow(rootNode, {
                 index: i,
                 color: pick(colours),
                 textColor: pick(colours),
                 text: `${pick(adjectives)} ${pick(nouns)}`
             });
-        });
-
-
+        }
     });
 }
 
@@ -183,7 +175,6 @@ const swapRows = () => {
         b.color = temp.color;
         b.children[0].color = temp.children[0].color;
         b.children[0].text = temp.children[0].text;
-    
     });
 }
 
@@ -208,8 +199,6 @@ const selectRandomNode = () => {
         textNode.fontSize = 128;
         textNode.x = 10;
         textNode.y = 10;
-
-
     });
 }
 
@@ -234,12 +223,12 @@ const createManyWithoutText = (amount = 20000) => {
                 resolve({ time });
             });
 
-            [...Array(amount)].map((_, i) => {
+            for (let i = 0; i < amount; i++) {
                 createRowWithoutText(rootNode, {
                     index: i,
                     color: pick(colours),
                 });
-            });
+            }
         });
     });
 }
@@ -248,7 +237,6 @@ const createManyWithoutText = (amount = 20000) => {
 const createMemoryBenchmark = async () => {
     const results = {};
 
-    await warmup(createManyWithoutText, 20000, 5);
     const createRes = await createManyWithoutText(20000)
     results.create = createRes.time.toFixed(2);
 
@@ -319,6 +307,8 @@ const runBenchmark = async () => {
     localStorage.setItem('renderer', JSON.stringify(results));
 }
 
+// get hash of the url
+const hash = window.location.hash.substring(1);
 if (hash === 'memory') {
     console.log('Running memory benchmark');
     createMemoryBenchmark();

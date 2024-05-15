@@ -1,0 +1,1 @@
+export const pick = (dict) => dict[Math.round(Math.random() * 1000) % dict.length];

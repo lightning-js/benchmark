@@ -3,7 +3,9 @@
   "version": "0.0.1",
   "main": "index.js",
   "scripts": {
-    "dev": "vite --host --open"
+    "dev": "vite --host",
+    "build": "vite build",
+    "dist": "vite build --mode production"
   },
   "author": "",
   "type": "module",
