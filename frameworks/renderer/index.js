@@ -33,10 +33,14 @@ let lastY = 10;
 const pick = dict => dict[Math.round(Math.random() * 1000) % dict.length];
 
 const createRow = (parent, config = {}) => {
-    const { xOffset, yOffset, color, textColor, text } = config;
+    const { color, textColor, text, index } = config;
+
+    const x = index % 27 * 40
+    const y  = ~~( index / 27 ) * 40
+
     const holder = renderer.createNode({
-        x: lastX,
-        y: lastY,
+        x: x,
+        y: y,
         width: 200,
         height: 40,
         color: color || 0x00000000,
@@ -55,32 +59,15 @@ const createRow = (parent, config = {}) => {
         color: textColor || 0xFFFFFFFF,
         fontSize: 26,
     });
-
-    lastX += xOffset || 0;
-    lastY += yOffset || 0;
-
-    if (lastY >= appHeight) {
-        lastY = 10;
-        lastX += 40;
-    }
-
-    if (lastX >= appWidth) {
-        lastX = Math.floor(Math.random() * 10);
-        lastY = Math.floor(Math.random() * 10);
-    }
 }
 
 const clear = () => {
     return new Promise((resolve) => {
         let clearPerf = performance.now();
-
         renderer.once('idle', () => {
             const time = performance.now() - clearPerf;
             resolve({ time });
         });
-
-        lastX = 10;
-        lastY = 10;
     
         rootNode.destroy();
         rootNode = renderer.createNode({
@@ -93,100 +80,77 @@ const clear = () => {
 const createMany = (amount = 1000) => {
     return new Promise((resolve) => {
         clear().then(() => {
-            const create = () => {
-                for (let i = 0; i < amount; i++) {
-                    createRow(rootNode, {
-                        xOffset: 0,
-                        yOffset: 40,
-                        color: pick(colours),
-                        textColor: pick(colours),
-                        text: `${pick(adjectives)} ${pick(nouns)}`
-                    });
-                }
-            }
-
             const createPerf = performance.now();
-            create();
-
             renderer.once('idle', () => {
                 const time = performance.now() - createPerf;
                 resolve({ time });
             });
+
+            [...Array(amount)].map((_, i) => {
+                createRow(rootNode, {
+                    index: i,
+                    color: pick(colours),
+                    textColor: pick(colours),
+                    text: `${pick(adjectives)} ${pick(nouns)}`
+                });
+            });
+
+
         });
     });
 }
 
 const appendMany = (amount = 1000) => {
     return new Promise((resolve) => {
-        const append = () => {
-            for (let i = 0; i < amount; i++) {
-                createRow(rootNode, {
-                    xOffset: 0,
-                    yOffset: 40,
-                    color: pick(colours),
-                    textColor: pick(colours),
-                    text: `${pick(adjectives)} ${pick(nouns)}`
-                });
-            }
-        }
-
         const appendPerf = performance.now();
-        append();
-
         renderer.once('idle', () => {
             const time = performance.now() - appendPerf;
             resolve({ time });
         });
+
+        [...Array(amount)].map((_, i) => {
+            createRow(rootNode, {
+                index: i,
+                color: pick(colours),
+                textColor: pick(colours),
+                text: `${pick(adjectives)} ${pick(nouns)}`
+            });
+        });
+
+
     });
 }
 
 const updateMany = (count, skip = 0) => {
     return new Promise((resolve) => {
-        // slice count from parentNode's children
         const updateManyPerf = performance.now();
-
-        let children;
-        if (skip < 0) {
-            children = rootNode.children.slice(0, count);
-        } else {
-            // get every nth child
-            children = rootNode.children.filter((_, i) => i % (skip + 1) === 0).slice(0, count);
-        }
-
-
-        for (let i = 0; i < children.length; i++) {
-            const child = children[i];
-            child.color = pick(colours);
-    
-            const textNode = child.children[0];
-            if (!textNode) {
-                continue;
-            }
-
-            textNode.color = pick(colours);
-            textNode.text = `${pick(adjectives)} ${pick(nouns)}`;
-        }
-
         renderer.once('idle', () => {
             const time = performance.now() - updateManyPerf;
             resolve({ time });
         });
+
+        for (let i = 0; i < rootNode.children.length; i += (skip + 1)) {
+            const child = rootNode.children[i];
+            child.color = pick(colours);
+    
+            const textNode = child.children[0];
+            textNode.color = pick(colours);
+            textNode.text = `${pick(adjectives)} ${pick(nouns)}`;
+        }
     });
 }
 
 const swapRows = () => {
     return new Promise((resolve) => {
-        if (rootNode.children.length < 998) {
-            return resolve();
-        }
+        const swapPerf = performance.now();
+        renderer.once('idle', () => {
+            const time = performance.now() - swapPerf;
+            resolve({ time });
+        });
 
         const a = rootNode.children[998];
         const b = rootNode.children[1];
-        if (!a || !b) {
-            return resolve();
-        }
-
-        const swapPerf = performance.now();        
+     
         const temp = a;
         a.y = b.y;
         a.x = b.x;
@@ -199,19 +163,19 @@ const swapRows = () => {
         b.color = temp.color;
         b.children[0].color = temp.children[0].color;
         b.children[0].text = temp.children[0].text;
-        
-        renderer.once('idle', () => {
-            const time = performance.now() - swapPerf;
-            resolve({ time });
-        });
+    
     });
 }
 
 const selectRandomNode = () => {
     return new Promise((resolve) => {
-        const randomNode = rootNode.children[Math.floor(Math.random() * rootNode.children.length)];
-
         const selectPerf = performance.now();
+        renderer.once('idle', () => {
+            const time = performance.now() - selectPerf;
+            resolve({ time });
+        });
+
+        const randomNode = rootNode.children[Math.floor(Math.random() * rootNode.children.length)];
 
         randomNode.x = 100;
         randomNode.y = 100;
@@ -220,35 +184,24 @@ const selectRandomNode = () => {
         randomNode.height = 400;
 
         const textNode = randomNode.children[0];
-        if (textNode) {
-            textNode.color = 0x000000FF; //black
-            textNode.fontSize = 128;
-            textNode.x = 10;
-            textNode.y = 10;
-        }
+        textNode.color = 0x000000FF; //black
+        textNode.fontSize = 128;
+        textNode.x = 10;
+        textNode.y = 10;
 
-        renderer.once('idle', () => {
-            const time = performance.now() - selectPerf;
-            resolve({ time });
-        });
+
     });
 }
 
 const removeRow = () => {
     return new Promise((resolve) => {
-        // select a random child node
-        const node = rootNode.children[Math.floor(Math.random() * rootNode.children.length)];
-        if (!node) {
-            return resolve();
-        }
-
         const removePerf = performance.now();
-        node.destroy();
-
         renderer.once('idle', () => {
             const time = performance.now() - removePerf;
             resolve({ time });
         });
+
+        rootNode.children[Math.floor(Math.random() * rootNode.children.length)].destroy();
     });
 }
 
@@ -270,7 +223,6 @@ await createMany(1000);
 const skipNthRes = await updateMany(1000, 10);
 results.skipNth = skipNthRes.time.toFixed(2);
 
-
 await createMany(1000);
 await warmup(selectRandomNode, undefined, 5);
 await createMany(1000);
@@ -289,8 +241,8 @@ await createMany(1000);
 const removeRes = await removeRow();
 results.remove = removeRes.time.toFixed(2);
 
-await warmup(createMany, 6000, 5);
-const createResLots = await createMany(6000)
+await warmup(createMany, 10000, 5);
+const createResLots = await createMany(10000)
 results.createLots = createResLots.time.toFixed(2);
 
 await clear();
