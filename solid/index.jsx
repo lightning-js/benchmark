@@ -1,12 +1,10 @@
+// import { render, Text, Config } from "@lightningjs/solid";
+import coreExtensionModuleUrl from "./AppCoreExtensions.js?importChunkUrl";
+
 import {
-    createEffect,
-    createMemo,
-    on,
-    createSignal,
-    Show,
-    createSelector,
-    For,
-  } from "solid-js";
+  createSignal,
+  For,
+} from "solid-js";
 import { render, Text, View, hexColor, Config } from "@lightningjs/solid";
 import { colours, adjectives, nouns } from '../data/data';
 import { warmup } from "../utils/warmup";
@@ -15,18 +13,17 @@ Config.debug = false;
 Config.animationsEnabled = true;
 Config.fontSettings.fontFamily = "Ubuntu";
 Config.fontSettings.color = hexColor("#f6f6f6");
-Config.fontSettings.fontSize = 32;
+Config.fontSettings.fontSize = 64;
 Config.rendererOptions = {
-//   coreExtensionModule: coreExtensionModuleUrl,
+    coreExtensionModule: coreExtensionModuleUrl,
 //   fpsUpdateInterval: logFps ? 200 : 0,
-  enableInspector: false,
+    enableInspector: false,
   // deviceLogicalPixelRatio: 1
 };
 
-
 const appHeight = 1080;
 const appWidth = 1900;
-const pick = dict => dict[Math.round(Math.random() * 1000) % dict.length];
+const pick = (dict) => dict[Math.round(Math.random() * 1000) % dict.length];
 let idCounter = 1;
 
 function buildData(count) {
@@ -57,12 +54,11 @@ function buildData(count) {
 
 let renderer = null;
 let c = {}; // control functions
-
 let lastX = 10;
 let lastY = 10;
 
 const App = () => {
-    const [data, setData] = createSignal([]),
+  const [data, setData] = createSignal([]),
     // [selected, setSelected] = createSignal(null),
     createMany = (amount = 1000) => {
         return clear().then(() => {
@@ -190,7 +186,7 @@ const App = () => {
     c.selectRandom = selectRandom;
     c.removeRow = removeRow;
 
-    return <View>
+    return (<View>
         <For each={ data() }>{ (row, index) => {
             let x = row.x();
             let y = row.y();
@@ -207,7 +203,7 @@ const App = () => {
                     width={row.width()}
                     height={row.height()}
                     alpha={0.8}
-                    fontFamily={'Ubuntu-ssdf'}
+                    fontFamily={"Ubuntu"}
                     color={row.textColor()}
                     fontSize={row.fontSize()}>
                     {row.label()}
@@ -230,11 +226,9 @@ const App = () => {
         }}
         </For>
     </View>
-}
+  );
+};
 
-// clear existing canvas, sometimes they are not cleared
-const app = document.getElementById('app');
-app.innerHTML = '';
 
 const solidResp = await render(() => <App />);
 renderer = solidResp.renderer;

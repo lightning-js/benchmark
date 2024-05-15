@@ -11,8 +11,13 @@
   "description": "",
   "dependencies": {
     "@lightningjs/solid": "^0.16.1",
-    "solid-js": "^1.8.17",
-    "vite": "^5.2.11",
-    "vite-plugin-solid": "^2.10.2"
+    "@lightningjs/solid-primitives": "^0.6.6",
+    "@lightningjs/vite-plugin-import-chunk-url": "^0.3.1",
+    "@solidjs/router": "^0.13.3",
+    "solid-js": "^1.8.17"
+  },
+  "devDependencies": {
+    "vite": "^4.5.0",
+    "vite-plugin-solid": "^2.7.2"
   }
 }
