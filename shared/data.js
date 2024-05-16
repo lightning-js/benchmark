@@ -2,7 +2,7 @@ export const adjectives = ["pretty", "large", "big", "small", "tall", "short", "
 export const nouns = ["table", "chair", "house", "bbq", "desk", "car", "pony", "cookie", "sandwich", "burger", "pizza", "mouse", "keyboard"];
 
 // not used
-//export const colours = ["red", "yellow", "blue", "green", "pink", "brown", "purple", "brown", "white", "black", "orange"];
+export const colourNames = ["red", "yellow", "blue", "green", "pink", "brown", "purple", "brown", "white", "black", "orange"];
 
 // our colors are in 0xRRGGBBAA
 // so map them ahead of time
