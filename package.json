@@ -4,8 +4,19 @@
   "description": "LightningJS Benchmark tool",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build:renderer" : "cd frameworks/renderer && npm install && npm run dist",
+    "build:solid" : "cd frameworks/solid && npm install && npm run dist",
+    "build:blits" : "cd frameworks/blits && npm install && npm run dist",
+    "build" : "npm run build:renderer && npm run build:solid && npm run build:blits",
+    "copy:renderer" : "node -e \"require('fs').cpSync('./frameworks/renderer/dist', './dist/renderer', {recursive: true});\"",
+    "copy:solid" : "node -e \"require('fs').cpSync('./frameworks/solid/dist', './dist/solid', {recursive: true});\"",
+    "copy:blits" : "node -e \"require('fs').cpSync('./frameworks/blits/dist', './dist/blits', {recursive: true});\"",
+    "copy" : "npm run copy:renderer && npm run copy:solid && npm run copy:blits",
+    "setup" : "npm install && npm run build && npm run copy"
   },
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "playwright": "^1.44.0"
+  }
 }
