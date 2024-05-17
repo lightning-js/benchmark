@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "LightningJS Benchmark tool",
   "main": "index.js",
+  "type" : "module",
   "scripts": {
     "build:renderer" : "cd frameworks/renderer && npm install && npm run dist",
     "build:solid" : "cd frameworks/solid && npm install && npm run dist",
@@ -12,7 +13,9 @@
     "copy:solid" : "node -e \"require('fs').cpSync('./frameworks/solid/dist', './dist/solid', {recursive: true});\"",
     "copy:blits" : "node -e \"require('fs').cpSync('./frameworks/blits/dist', './dist/blits', {recursive: true});\"",
     "copy" : "npm run copy:renderer && npm run copy:solid && npm run copy:blits",
-    "setup" : "npm install && npm run build && npm run copy"
+    "setup" : "npm install && npm run build && npm run copy",
+    "setup:playwright" : "npx playwright install",
+    "start" : "node index.js"
   },
   "author": "",
   "license": "MIT",

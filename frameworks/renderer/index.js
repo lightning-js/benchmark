@@ -244,8 +244,7 @@ const createMemoryBenchmark = async () => {
         console.log(`${key}: ${results[key]}ms`);
     });
 
-    // save it for the results page
-    localStorage.setItem('renderer-memory', JSON.stringify(results));
+    console.log('Memory!', results);
 }
 
 const runBenchmark = async () => {
@@ -303,8 +302,7 @@ const runBenchmark = async () => {
         console.log(`${key}: ${results[key]}ms`);
     });
 
-    // save it for the results page
-    localStorage.setItem('renderer', JSON.stringify(results));
+    console.log('Done!', results);
 }
 
 // get hash of the url

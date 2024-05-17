@@ -1,11 +1,13 @@
 import { defineConfig } from "vite";
 import solidPlugin from "vite-plugin-solid";
 import { importChunkUrl } from "@lightningjs/vite-plugin-import-chunk-url";
+import { viteStaticCopy } from "vite-plugin-static-copy";
 import path from "path";
 
 const target = "esnext";
 
 export default defineConfig({
+  base: "./",
   plugins: [
     importChunkUrl(),
     solidPlugin({
@@ -14,6 +16,14 @@ export default defineConfig({
         generate: "universal",
       },
     }),
+    viteStaticCopy({
+      targets: [
+        {
+          src: 'fonts/**/*',
+          dest: 'fonts'
+        }
+      ]
+    })
   ],
   esbuild: {
     target: target,

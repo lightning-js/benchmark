@@ -8,7 +8,7 @@ const target = "esnext"
 
 export default defineConfig(({ command, mode, ssrBuild }) => {
   return {
-    base: '/', // Set to your base path if you are deploying to a subdirectory (example: /myApp/)
+    base: './', // Set to your base path if you are deploying to a subdirectory (example: /myApp/)
     plugins: [...blitsVitePlugins],
     resolve: {
       mainFields: ['browser', 'module', 'jsnext:main', 'jsnext'],

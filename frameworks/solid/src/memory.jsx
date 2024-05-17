@@ -48,14 +48,13 @@ const Memory = () => {
         
         await clear();
         const memoryRes = await createMany(20000);
-        results.memory = memoryRes.time;
+        results.create = memoryRes.time.toFixed(2);
 
         Object.keys(results).forEach(key => {
             console.log(`${key}: ${results[key]}ms`);
         });
 
-        // save it for the results page
-        localStorage.setItem('solid-memory', JSON.stringify(results));
+        console.log('Memory!', results);
     }
 
     console.log('starting memory test');

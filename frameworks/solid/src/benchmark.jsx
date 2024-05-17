@@ -197,8 +197,7 @@ const Benchmark = () => {
             console.log(`${key}: ${results[key]}ms`);
         });
 
-        // save it for the results page
-        localStorage.setItem('solid', JSON.stringify(results));
+        console.log('Done!', results);
     }
 
     console.log('starting benchmark');
