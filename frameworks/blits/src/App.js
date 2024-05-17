@@ -1,6 +1,8 @@
 import Blits from '@lightningjs/blits'
 import { colourNames, adjectives, nouns } from '../../../shared/data.js'
 
+import code from './generated-code/patch6.js'
+
 const pick = (dict) => dict[Math.round(Math.random() * 1000) % dict.length]
 
 let perf
@@ -23,6 +25,8 @@ const sequence = (steps, pause = 0) => {
   }, Promise.resolve(null))
 }
 
+let count = 1
+
 const createMany = (amount) => {
   const items = []
 
@@ -30,6 +34,7 @@ const createMany = (amount) => {
   let y = 0
   for (let i = 1; i < amount + 1; i++) {
     items.push({
+      id: 'key' + count++,
       x: x,
       y: y,
       color: pick(colourNames),
@@ -47,11 +52,14 @@ const createMany = (amount) => {
 export default Blits.Application({
   template: `
     <Element>
-      <Element :for="item in $items" w="200" h="40" color="$item.color" x="$item.x" y="$item.y">
+      <Element :for="item in $items" w="200" h="40" color="$item.color" x="$item.x" y="$item.y" key="$item.id">
         <Text content="$item.text" color="$item.textColor" />
       </Element>
     </Element>
   `,
+
+  _code: code,
+
   state() {
     return {
       items: [],
@@ -59,48 +67,7 @@ export default Blits.Application({
   },
   hooks: {
     ready() {
-      sequence(
-        [
-          () => {
-            console.log('Start warming up')
-            this.items = createMany(1000)
-          },
-          () => {
-            this.items = []
-          },
-          () => {
-            this.items = createMany(1000)
-          },
-          () => {
-            this.items = []
-          },
-          () => {
-            this.items = createMany(1000)
-          },
-          () => {
-            this.items = []
-          },
-          () => {
-            this.items = createMany(1000)
-          },
-          () => {
-            this.items = []
-          },
-          () => {
-            this.items = createMany(1000)
-          },
-          () => {
-            this.items = []
-          },
-          () => {
-            console.log('Start Create 1000 test')
-            startPerf('Create 1000')
-            const items = createMany(1000)
-            this.items = items
-          },
-        ],
-        200
-      )
+      sequence([() => this.test1()], 3000)
     },
     idle() {
       if (currentTest) {
@@ -108,6 +75,50 @@ export default Blits.Application({
         console.log(currentTest, now - perf)
         perf = now
       }
+    },
+  },
+  methods: {
+    test1() {
+      sequence(
+        [
+          () => {
+            this.items = createMany(1000)
+          },
+          () => {
+            this.items = []
+          },
+          () => {
+            this.items = createMany(1000)
+          },
+          () => {
+            this.items = []
+          },
+          () => {
+            this.items = createMany(1000)
+          },
+          () => {
+            this.items = []
+          },
+          () => {
+            this.items = createMany(1000)
+          },
+          () => {
+            this.items = []
+          },
+          () => {
+            this.items = createMany(1000)
+          },
+          () => {
+            this.items = []
+          },
+          () => {
+            startPerf('Create 1000')
+            const items = createMany(1000)
+            this.items = items
+          },
+        ],
+        200
+      )
     },
   },
 })
