@@ -2,9 +2,9 @@
 
 import { defineConfig } from 'vite'
 import blitsVitePlugins from '@lightningjs/blits/vite'
-import path from "path"
+import path from 'path'
 
-const target = "esnext"
+const target = 'esnext'
 
 export default defineConfig(({ command, mode, ssrBuild }) => {
   return {
@@ -21,13 +21,13 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
       fs: {
         allow: ['..'],
       },
-      port: 1234
+      port: 1234,
     },
     worker: {
       format: 'es',
     },
     blits: {
-      precompile: false
+      precompile: false,
     },
     build: {
       target: target,
