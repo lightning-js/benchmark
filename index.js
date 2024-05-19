@@ -1,5 +1,6 @@
 import fs from "fs";
 import { runBenchmark } from "./testrunner/runBenchmark.js";
+import { processResults } from "./testrunner/processResults.js";
 
 if (!fs.existsSync('./dist')) {
     console.error('Please run `npm run setup` first');
@@ -41,6 +42,10 @@ const run = async (dir) => {
 
         console.log('Memory results:');
         console.log(memoryResults);
+
+        const p = processResults(results, memoryResults);
+        console.log('Processed results:');
+        console.log(p);
 
         process.exit(0);
     }

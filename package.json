@@ -3,23 +3,25 @@
   "version": "0.0.1",
   "description": "LightningJS Benchmark tool",
   "main": "index.js",
-  "type" : "module",
+  "type": "module",
   "scripts": {
-    "build:renderer" : "cd frameworks/renderer && npm install && npm run dist",
-    "build:solid" : "cd frameworks/solid && npm install && npm run dist",
-    "build:blits" : "cd frameworks/blits && npm install && npm run dist",
-    "build" : "npm run build:renderer && npm run build:solid && npm run build:blits",
-    "copy:renderer" : "node -e \"require('fs').cpSync('./frameworks/renderer/dist', './dist/renderer', {recursive: true});\"",
-    "copy:solid" : "node -e \"require('fs').cpSync('./frameworks/solid/dist', './dist/solid', {recursive: true});\"",
-    "copy:blits" : "node -e \"require('fs').cpSync('./frameworks/blits/dist', './dist/blits', {recursive: true});\"",
-    "copy" : "npm run copy:renderer && npm run copy:solid && npm run copy:blits",
-    "setup" : "npm install && npm run build && npm run copy",
-    "setup:playwright" : "npx playwright install",
-    "start" : "node index.js"
+    "build:renderer": "cd frameworks/renderer && npm install && npm run dist",
+    "build:solid": "cd frameworks/solid && npm install && npm run dist",
+    "build:blits": "cd frameworks/blits && npm install && npm run dist",
+    "build": "npm run build:renderer && npm run build:solid && npm run build:blits",
+    "copy:renderer": "node -e \"require('fs').cpSync('./frameworks/renderer/dist', './dist/renderer', {recursive: true});\"",
+    "copy:solid": "node -e \"require('fs').cpSync('./frameworks/solid/dist', './dist/solid', {recursive: true});\"",
+    "copy:blits": "node -e \"require('fs').cpSync('./frameworks/blits/dist', './dist/blits', {recursive: true});\"",
+    "copy": "npm run copy:renderer && npm run copy:solid && npm run copy:blits",
+    "setup": "npm install && npm run build && npm run copy",
+    "setup:playwright": "npx playwright install",
+    "start": "concurrently --kill-others --success last \"npx http-server -c-1 ./dist/\" \"node index.js\""
   },
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "concurrently": "^8.2.2",
+    "http-server": "^14.1.1",
     "playwright": "^1.44.0"
   }
 }
