@@ -48,8 +48,7 @@ const indexFooter = `</body>
 const header = `<div>
     <h2>Results for Lightning JS Framework benchmark</h2>
     <p>The benchmark was run on <span>{{OSversion}}</span> on a <span>{{systemVersion}}</span></p>
-    <p>Tests where executed on browser version: <span id="browserVersion">{{browserVersion}}</span></p>
-    <p>Using PlayWright</p>
+    <p>Tests where executed on browser version: <span id="browserVersion">{{browserVersion}}</span> using PlayWright</p>
 </div>`;
 
 const resultsHeader = `<div>
@@ -214,7 +213,7 @@ export const writeResults = (results, frameworkVersions, browserVersion) => {
     const appendRows = frameworks.map(f => `<td>${results[f].append.time} (${results[f].append.mean})</td>`).join('');
     const clearRows = frameworks.map(f => `<td>${results[f].clear.time} (${results[f].clear.mean})</td>`).join('');
     const overall = frameworks.map(f => `<td>${results[f].avgMean}</td>`).join('');
-    const rowsMemory = frameworks.map(f => `<td>${results[f].memory.memory} (created in ${results[f].memory.time}ms)</td>`).join('');
+    const rowsMemory = frameworks.map(f => `<td>${results[f].memory.memory}MB (created in ${results[f].memory.time}ms)</td>`).join('');
 
     fileStream.write(table
         .replace('{{frameworks}}', frameworksHeader)
