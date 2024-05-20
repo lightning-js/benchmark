@@ -182,6 +182,10 @@ export const writeResults = (results, frameworkVersions, browserVersion) => {
     const filename = `results_${browserVersion}_${osVersion.platform}_${osVersion.release}_${osVersion.arch}.html`;
     const fileStream = createFile(filename);
 
+    fileStream.on('error', function(err) {
+        console.error("Error writing to file:", err);
+    });
+
     // write the index header
     fileStream.write(indexHeader);
 
@@ -209,7 +213,7 @@ export const writeResults = (results, frameworkVersions, browserVersion) => {
     const createManyRows = frameworks.map(f => `<td>${results[f].createLots.time} (${results[f].createLots.mean})</td>`).join('');
     const appendRows = frameworks.map(f => `<td>${results[f].append.time} (${results[f].append.mean})</td>`).join('');
     const clearRows = frameworks.map(f => `<td>${results[f].clear.time} (${results[f].clear.mean})</td>`).join('');
-    const overall = frameworks.map(f => `<td>${results[f].update.mean}</td>`).join('');
+    const overall = frameworks.map(f => `<td>${results[f].avgMean}</td>`).join('');
     const rowsMemory = frameworks.map(f => `<td>${results[f].memory.memory} (created in ${results[f].memory.time}ms)</td>`).join('');
 
     fileStream.write(table
@@ -235,6 +239,10 @@ export const writeResults = (results, frameworkVersions, browserVersion) => {
     fileStream.end();
     console.log(`Results written to ${filename}`);
 
-    // exit out
-    process.exit(0);
+    fileStream.on('finish', function() {
+        // exit out
+        process.exit(0);
+    });
+    
+
 }
