@@ -1,5 +1,15 @@
-//const { chromium, devices } = require('playwright');
 import { chromium } from 'playwright';
+
+export const getBrowserVersion = async () => {
+    const browser = await chromium.launch({ 
+        headless: true
+    });
+
+    const browserVersion = `Chromium ${await browser.version()}`;
+    await browser.close();
+
+    return browserVersion;
+}
 
 export const runBenchmark = async (url) => {
     if (!url) throw new Error('url is required');
@@ -46,17 +56,12 @@ export const runBenchmark = async (url) => {
         exit();
     }, 1000 * 60 * 5);
 
-    // const perf = await page.evaluate(() => window.performance);
-    // console.log(perf);
-    // // console.log('JS Heap: ', jsheap / 1024 / 1024, 'MB');
-
     const collectJsHeap = async () => {
         await client.send('Performance.enable');
         const performanceMetrics = await client.send('Performance.getMetrics');
         await client.send('Performance.disable');
         return performanceMetrics.metrics.find(m => m.name === 'JSHeapUsedSize').value;
     }
-
 
     page.on('console', async msg => { 
         if (msg.text().includes('Done!')) {

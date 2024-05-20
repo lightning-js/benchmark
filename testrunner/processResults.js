@@ -37,8 +37,6 @@ export const processResults = (results, memoryResults) => {
         });
     });
 
-    console.log('fastestTimes', fastestTimes);
-
     // process results and calculate mean
     frameworks.forEach(f => {
         const framework = results[f];
@@ -54,8 +52,8 @@ export const processResults = (results, memoryResults) => {
         });
 
         // geometric mean of all means
-        const timesArray = times.map(t => processedResults[f][t].mean);
-        processedResults[f].geometricMean = avgMean(timesArray);
+        const timesArray = times.map(t => parseFloat(processedResults[f][t].mean));
+        processedResults[f].avgMean = avgMean(timesArray);
     });
 
     // add memory results
@@ -65,7 +63,7 @@ export const processResults = (results, memoryResults) => {
         }
 
         processedResults[f].memory = {
-            memory: memoryResults[f].memory,
+            memory: memoryResults[f].heap,
             time: memoryResults[f].create,
         }
     });
@@ -75,56 +73,19 @@ export const processResults = (results, memoryResults) => {
         return processedResults[a].geometricMean - processedResults[b].geometricMean;
     });
 
-    return sortedFrameworks.map(f => {
-        return {
-            name: f,
-            results: processedResults[f]
-        }
+    // create sorted results Object
+    const sortedResults = {};
+    sortedFrameworks.forEach(f => {
+        sortedResults[f] = processedResults[f];
     });
+
+    return sortedResults;
 }
 
 const calculateMean = (value, baseline) => {
-    return (value / baseline);
+    return (value / baseline).toFixed(2);
 }
 
 const avgMean = (values) => {
     return (values.reduce((a, b) => a + b) / values.length).toFixed(2);
 }
-
-const test = () => {
-    const results = {
-        renderer: {
-            create: '312.30',
-            update: '155.90',
-            skipNth: '103.70',
-            select: '137.00',
-            swap: '216.50',
-            remove: '103.70',
-            createLots: '1656.10',
-            append: '362.70',
-            clear: '71.70'
-        },
-        solid: {
-            create: '397.40',
-            update: '223.60',
-            skipNth: '108.90',
-            select: '102.60',
-            swap: '703.60',
-            remove: '107.70',
-            createLots: '2733.50',
-            append: '397.20',
-            clear: '305.70'
-        }
-    }
-
-    const memoryResults = {
-        renderer: { create: '1323.60', heap: '58.67' },
-        solid: { create: '1722.10', heap: '88.98' }
-    }
-
-    const processedResults = processResults(results, memoryResults);
-    console.log(JSON.stringify(processedResults));
-    console.log(processedResults);
-}
-
-// test();
