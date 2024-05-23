@@ -27,4 +27,28 @@ The baseline is the direct renderer API against which we will compare Applicatio
 
 # Instructions
 
-TBD.
+## Install this
+
+Clone the repository:
+
+`git clone <repo>`
+
+Setup the framework:
+
+`npm setup`
+
+This should install the dependencies, build the frameworks and copy the frameworks to the dist folder.
+
+If this is the first time that you are using PlayWright (https://playwright.dev/) please make sure you install the PlayWright dependencies by running:
+
+`npm setup:playwright`
+
+
+You can also run individual commands by doing:
+
+`npm build:<x>`
+
+To build a framework or if you want to copy the files:
+
+`npm copy:<x>`
+
