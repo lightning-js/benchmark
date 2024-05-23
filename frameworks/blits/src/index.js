@@ -8,19 +8,9 @@ Blits.Launch(App, 'app', {
   debugLevel: 1,
   fonts: [
     {
-      family: 'lato',
+      family: 'Ubuntu',
       type: 'msdf',
-      file: 'fonts/Lato-Regular.ttf',
-    },
-    {
-      family: 'raleway',
-      type: 'msdf',
-      file: 'fonts/Raleway-ExtraBold.ttf',
-    },
-    {
-      family: 'opensans',
-      type: 'web',
-      file: 'fonts/OpenSans-Medium.ttf',
+      file: 'fonts/Ubuntu-Bold.ttf',
     },
   ],
 })
