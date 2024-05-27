@@ -50,15 +50,11 @@ export default Blits.Component('Benchmark', {
         const time = now - perf
         perf = now
         done({ time })
-        // done = null
         setDone(null)
       }
     },
   },
   methods: {
-    empty() {
-      this.items = []
-    },
     async testCreateMany() {
       //console.log('running testCreateMany')
       await warmup(createMany.bind(this), 1000, 5)
@@ -89,12 +85,14 @@ export default Blits.Component('Benchmark', {
       //console.log('running testSwapRows')
       await createMany.call(this, 1000)
       await warmup(swapRows.bind(this), null, 5)
+      await createMany.call(this, 1000)
       results.swap = await swapRows.call(this)
     },
     async testRemoveRow() {
       //console.log('running testRemoveRow')
       await createMany.call(this, 1000)
       await warmup(removeRow.bind(this), null, 5)
+      await createMany.call(this, 1000)
       results.remove = await removeRow.call(this)
     },
     async testCreateMuchoMany() {
@@ -107,12 +105,11 @@ export default Blits.Component('Benchmark', {
       await clear.call(this)
       await warmup(appendMany.bind(this), 1000, 5)
       await createMany.call(this, 1000)
-      // await warmup(appendMany.bind(this), 1000, 5)
       results.append = await appendMany.call(this, 1000)
     },
     async testClear() {
       //console.log('running testClear')
-      await createMany.call(this, 1000)
+      await warmup(createMany.bind(this), 1000, 5)
       results.clear = await clear.call(this)
     },
   },
