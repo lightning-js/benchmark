@@ -60,8 +60,7 @@ const createItemWithoutText = (x, y, key) => {
 const clear = function () {
   return new Promise((resolve) => {
     done = resolve
-    const newItems = []
-    this.items = newItems
+    this.items = []
   })
 }
 
