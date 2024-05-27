@@ -35,20 +35,20 @@ Clone the repository:
 
 Setup the framework:
 
-`npm setup`
+`npm run setup`
 
 This should install the dependencies, build the frameworks and copy the frameworks to the dist folder.
 
 If this is the first time that you are using PlayWright (https://playwright.dev/) please make sure you install the PlayWright dependencies by running:
 
-`npm setup:playwright`
+`npm run setup:playwright`
 
 
 You can also run individual commands by doing:
 
-`npm build:<x>`
+`npm run build:<x>`
 
 To build a framework or if you want to copy the files:
 
-`npm copy:<x>`
+`npm run copy:<x>`
 
