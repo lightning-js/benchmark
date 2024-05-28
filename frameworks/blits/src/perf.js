@@ -125,6 +125,7 @@ const updateRandom = function () {
     this.items[randomIdx].h = 400
     this.items[randomIdx].x = 100
     this.items[randomIdx].y = 100
+    this.items[randomIdx].fontSize = 100
   })
 }
 
