@@ -87,33 +87,28 @@ export default Blits.Component('Benchmark', {
       results.select = await updateRandom.call(this)
     },
     async testSwapRows() {
-      //console.log('running testSwapRows')
       await createMany.call(this, 1000)
-      await warmup(swapRows.bind(this), null, 5)
+      await warmup(swapRows.bind(this), 5)
       await createMany.call(this, 1000)
       results.swap = await swapRows.call(this)
     },
     async testRemoveRow() {
-      //console.log('running testRemoveRow')
       await createMany.call(this, 1000)
-      await warmup(removeRow.bind(this), null, 5)
+      await warmup(removeRow.bind(this), 5)
       await createMany.call(this, 1000)
       results.remove = await removeRow.call(this)
     },
     async testCreateMuchoMany() {
-      //console.log('running testCreateMuchoMany')
       await warmup(createMany.bind(this), 10000, 5)
       results.createLots = await createMany.call(this, 10000)
     },
     async testAppendMany() {
-      //console.log('running testAppendMany')
       await clear.call(this)
       await warmup(appendMany.bind(this), 1000, 5)
       await createMany.call(this, 1000)
       results.append = await appendMany.call(this, 1000)
     },
     async testClear() {
-      //console.log('running testClear')
       await warmup(createMany.bind(this), 1000, 5)
       results.clear = await clear.call(this)
     },

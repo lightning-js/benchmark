@@ -132,31 +132,27 @@ const updateRandom = function () {
 const swapRows = function () {
   return new Promise((resolve) => {
     done = resolve
-    const newItems = this.items.slice()
-    if (this.items.length > 998) {
-      const tmp = newItems[1]
-      newItems[1] = newItems[998]
-      newItems[998] = tmp
-    }
 
-    // this is really slow, but it's the only way to trigger a re-render
-    this.items = []
-    this.items = newItems
+    const a = this.items[0]
+    const b = this.items[this.items.length - 1]
+
+    this.items[1] = {...b, ...{x: a.x, y: a.y}}
+    this.items[this.items.length - 2] = {...a, ...{x: b.x, y: b.y}}
+
   })
 }
 
 const removeRow = function () {
   return new Promise((resolve) => {
     done = resolve
-    const newItems = this.items.slice()
-    newItems.pop()
-    this.items = newItems
+    this.items.pop()
   })
 }
 
 const appendMany = function (amount) {
   return new Promise((resolve) => {
     done = resolve
+
     const newItems = this.items.slice()
     let x = 0
     let y = 0
@@ -168,6 +164,7 @@ const appendMany = function (amount) {
     }
 
     this.items = newItems
+
   })
 }
 
