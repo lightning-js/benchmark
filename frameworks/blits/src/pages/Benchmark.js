@@ -19,10 +19,10 @@ const results = {}
 
 export default Blits.Component('Benchmark', {
   template: `
-    <Element :for="item in $items" w="200" h="40" :color="$item.color" x="$item.x" y="$item.y" key="$item.id">
+    <Element :for="item in $items" :w="$item.w" :h="$item.h" :color="$item.color" :x="$item.x" :y="$item.y" key="$item.id">
       <Text content="$item.text" :color="$item.textColor" alpha="0.8" size="26" font="Ubuntu" x="5" y="2" />
     </Element>
-    `,
+  `,
   state() {
     return {
       items: [],
@@ -56,28 +56,24 @@ export default Blits.Component('Benchmark', {
   },
   methods: {
     async testCreateMany() {
-      //console.log('running testCreateMany')
       await warmup(createMany.bind(this), 1000, 5)
       results.create = await createMany.call(this, 1000)
     },
     async testUpdateMany() {
-      //console.log('running testUpdateMany')
       await createMany.call(this, 1000)
-      await warmup(updateMany.bind(this), 1000, 5)
+      await warmup(updateMany.bind(this), 5)
       await createMany.call(this, 1000)
-      results.update = await updateMany.call(this, 1000)
+      results.update = await updateMany.call(this)
     },
     async testSkipNth() {
-      //console.log('running testSkipNth')
       await createMany.call(this, 1000)
-      await warmup(updateMany.bind(this), [1000, 10], 5)
+      await warmup(updateMany.bind(this), 10, 5)
       await createMany.call(this, 1000)
       results.skipNth = await updateMany.call(this, 10)
     },
     async testUpdateRandom() {
-      //console.log('running testUpdateRandom')
       await createMany.call(this, 1000)
-      await warmup(updateRandom.bind(this), null, 5)
+      await warmup(updateRandom.bind(this), 5)
       await createMany.call(this, 1000)
       results.select = await updateRandom.call(this)
     },

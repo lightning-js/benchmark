@@ -107,23 +107,11 @@ const createManyWithoutText = function (amount = 20000) {
 const updateMany = function (skip = 0) {
   return new Promise((resolve) => {
     done = resolve
-    // for (let i = 0; i < this.items.length; i += skip + 1) {
-    //   this.items[i].color = pick(colourNames)
-    //   this.items[i].textColor = pick(colourNames)
-    //   this.items[i].text = `${pick(adjectives)} ${pick(nouns)}`
-    // }
-
-    this.items = this.items.map((item, i) => {
-      if (i % (skip + 1) === 0) {
-        return {
-          ...item,
-          color: pick(colourNames),
-          textColor: pick(colourNames),
-          text: `${pick(adjectives)} ${pick(nouns)}`,
-        }
-      }
-      return item
-    })
+    for (let i = 0; i < this.items.length; i += skip + 1) {
+      this.items[i].color = pick(colourNames)
+      this.items[i].textColor = pick(colourNames)
+      this.items[i].text = `${pick(adjectives)} ${pick(nouns)}`
+    }
   })
 }
 
@@ -131,21 +119,12 @@ const updateRandom = function () {
   return new Promise((resolve) => {
     done = resolve
     const randomIdx = Math.floor(Math.random() * this.items.length)
-    const newItems = this.items.map((item, i) => {
-      if (i === randomIdx) {
-        return {
-          ...item,
-          color: 'red',
-          w: 1200,
-          h: 400,
-          x: 100,
-          y: 100,
-        }
-      }
-      return item
-    })
 
-    this.items = newItems
+    this.items[randomIdx].color = 'red'
+    this.items[randomIdx].w = 1200
+    this.items[randomIdx].h = 400
+    this.items[randomIdx].x = 100
+    this.items[randomIdx].y = 100
   })
 }
 
