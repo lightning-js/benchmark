@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Comcast Cable Communications Management, LLC
+ * Copyright 2024 Comcast Cable Communications Management, LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -24,7 +24,7 @@ const results = {}
 export default Blits.Component('Memory', {
   template: `
     <Element :for="item in $items" w="4" h="4" :color="$item.color" x="$item.x" y="$item.y" key="$item.id" />
-    `,
+  `,
   state() {
     return {
       items: [],
