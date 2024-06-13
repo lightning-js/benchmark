@@ -9,7 +9,10 @@ import { adjectives, nouns } from '../../shared/data';
 import { warmup } from '../../shared/utils/warmup';
 
 // apply CSS styling
-// styling();
+const style = document.createElement('style');
+document.head.appendChild(style);
+if (style.sheet)
+    style.sheet.insertRule('@media all { html {height: 100%; width: 100%;} *,body {margin:0; padding:0;} canvas { position: absolute; z-index: 2; } body { width: 100%; height: 100%;} }');
 
 // L2 colors are AA RR GG BB
 const colours = [
@@ -30,17 +33,18 @@ const pick = dict => dict[Math.round(Math.random() * 1000) % dict.length];
 
 const options = {
     stage: {
-        w: 1280,
-        h: 720,
+        w: 1080,
+        h: 1920,
         clearColor: 0xFF000000,
         canvas2d: false,
         useImageWorker: true,
         pauseRafLoopOnIdle: true,
+        // bufferSize: 4e6, // WvB tried to raise this to 4M but it didn't work for the 20k items test
     },
     debug: false,
 }
 
-class Block extends Lightning.Application {
+class Block extends Lightning.Component {
     static _template() {
         return {
             x: 0, y: 0,
@@ -68,6 +72,28 @@ class Block extends Lightning.Application {
     }
 }
 
+class BlockNoText extends Lightning.Component {
+    static _template() {
+        return {
+            x: 0, y: 0,
+            rect: true, w: 4, h: 4, color: 0xFF000000,
+        }
+    }
+
+    _firstActive() {
+        const { color, index } = this.data;
+
+        const x = index % 216 * 4
+        const y  = ~~( index / 216 ) * 4
+
+        this.patch({
+            x: x,
+            y: y,
+            color: color,
+        });
+    }
+}
+
 export class App extends Lightning.Application {
     static _template() {
         return {
@@ -76,11 +102,14 @@ export class App extends Lightning.Application {
     }
 
     _init() {
-        this._items = [];
-
-        setTimeout(() => {
-            this.createMany();
-        }, 1000);
+        // get hash of the url
+        const hash = window.location.hash.substring(1);
+        if (hash === 'memory') {
+            console.log('Running memory benchmark');
+            this.createMemoryBenchmark();
+        } else {
+            this.runBenchmark();
+        }
     }
 
     _createRow(index) {
@@ -96,13 +125,246 @@ export class App extends Lightning.Application {
     }
 
     _clear() {
-        this.tag('items').childList.clear();
+        return new Promise( resolve => {
+            const clearPerf = performance.now();
+            this.tag('Items').childList.clear();
+
+            this.stage.once('frameEnd', () => {
+                const time = performance.now() - clearPerf;
+                resolve({ time });
+            });
+        });
     }
 
     createMany(amount = 1000) {
-        for (let i = 0; i < amount; i++) {
-            this._createRow(i);
-        }
+        return new Promise( resolve => {
+            this._clear().then(() => {
+                const createPerf = performance.now();
+                for (let i = 0; i < amount; i++) {
+                    this._createRow(i);
+                }
+
+                this.stage.once('idle', () => {
+                    const time = performance.now() - createPerf;
+                    resolve({ time });
+                });
+
+            });
+        })
+    }
+
+    createManyWithoutText(amount = 1000) {
+        return new Promise( resolve => {
+            this._clear().then(() => {
+                const createPerf = performance.now();
+                for (let i = 0; i < amount; i++) {
+                    this.tag('Items').childList.add({
+                        type: BlockNoText,
+                        data: {
+                            color: pick(colours),
+                            index: i
+                        }
+                    });
+                }
+
+                this.stage.once('idle', () => {
+                    const time = performance.now() - createPerf;
+                    resolve({ time });
+                });
+            });
+        });
+    }
+
+    updateMany(count, skip = 0) {
+        return new Promise( resolve => {
+            const updatePerf = performance.now();
+            for (let i = 0; i < count; i += (skip + 1)) {
+                const child = this.tag('Items').childList.getAt(i);
+                if (child) {
+                    child.patch({
+                        color: pick(colours),
+                        Label: {
+                            text: { text: `${pick(adjectives)} ${pick(nouns)}`, textColor: pick(colours) },
+                        }
+                    });
+                }
+            }
+
+            this.stage.once('idle', () => {
+                const time = performance.now() - updatePerf;
+                resolve({ time });
+            });
+        });
+    }
+
+    selectRandomNode() {
+        return new Promise( resolve => {
+            const selectPerf = performance.now();
+            const index = Math.floor(Math.random() * this.tag('Items').childList.length);
+            const child = this.tag('Items').childList.getAt(index);
+            const text = child.data.text;
+
+            if (child) {
+                child.patch({
+                    x: 100,
+                    y: 100,
+                    color: 0xFFFF0000, //RED
+                    w: 1200,
+                    h: 400,
+                });
+
+                const label = child.tag('Label');
+                label.patch({
+                    x: 10,
+                    y: 10,
+                    text: { text: text, fontSize: 40, textColor: 0xFF000000 }
+                });
+            }
+
+            this.stage.once('idle', () => {
+                const time = performance.now() - selectPerf;
+                resolve({ time });
+            });
+
+        });
+    }
+
+    swapRows() {
+        return new Promise( resolve => {
+            const swapPerf = performance.now();
+            const a = this.tag('Items').childList.getAt(998);
+            const b = this.tag('Items').childList.getAt(1);
+         
+            const temp = a;
+            a.patch({
+                x: b.x,
+                y: b.y,
+                color: b.color,
+                Label: {
+                    text: { text: b.data.text, textColor: b.data.textColor }
+                }
+            });
+
+            b.patch({
+                x: temp.x,
+                y: temp.y,
+                color: temp.color,
+                Label: {
+                    text: { text: temp.data.text, textColor: temp.data.textColor }
+                }
+            });
+
+            this.stage.once('idle', () => {
+                const time = performance.now() - swapPerf;
+                resolve({ time });
+            });
+        });
+    }
+
+    removeRow() {
+        return new Promise( resolve => {
+            const removePerf = performance.now();
+            const index = Math.floor(Math.random() * this.tag('Items').childList.length);
+            this.tag('Items').childList.removeAt(index);
+
+            this.stage.once('idle', () => {
+                const time = performance.now() - removePerf;
+                resolve({ time });
+            });
+        });
+    }
+
+    appendMany(amount = 1000) {
+        return new Promise( resolve => {
+            const appendPerf = performance.now();
+            for (let i = 0; i < amount; i++) {
+                this._createRow(i);
+            }
+
+            this.stage.once('idle', () => {
+                const time = performance.now() - appendPerf;
+                resolve({ time });
+            });
+        });
+    }
+
+    async runBenchmark() {
+        const results = {}
+        
+        await warmup(this.createMany.bind(this), 1000, 5);
+        const createRes = await this.createMany(1000);
+        results.create = createRes.time.toFixed(2);
+
+        await this.createMany(1000);
+        await warmup(this.updateMany.bind(this), 1000, 5);
+        await this.createMany(1000);
+        const updateRes = await this.updateMany(1000);
+        results.update = updateRes.time.toFixed(2);
+
+        await this.createMany(1000);
+        await warmup(this.updateMany.bind(this), [1000, 10], 5);
+        await this.createMany(1000);
+        const skipNthRes = await this.updateMany(1000, 10);
+        results.skipNth = skipNthRes.time.toFixed(2);
+
+        await this.createMany(1000);
+        await warmup(this.selectRandomNode.bind(this), undefined, 5);
+        await this.createMany(1000);
+        const selectRes = await this.selectRandomNode();
+        results.select = selectRes.time.toFixed(2);
+
+        await this.createMany(1000);
+        await warmup(this.swapRows.bind(this), undefined, 5);
+        await this.createMany(1000);
+        const swapRes = await this.swapRows();
+        results.swap = swapRes.time.toFixed(2);
+
+        await this.createMany(1000);
+        await warmup(this.removeRow.bind(this), undefined, 5);
+        await this.createMany(1000);
+        const removeRes = await this.removeRow();
+        results.remove = removeRes.time.toFixed(2);
+
+        await warmup(this.createMany.bind(this), 10000, 5);
+        const createResLots = await this.createMany(10000);
+        results.createLots = createResLots.time.toFixed(2);
+
+        await this._clear();
+        // L2 goes out of array bounds if we append 5x1000 items
+        // so we appeend 2x 1000 with a clear inbetween instead
+        // this is only for the warmup phase so it's fine
+        await warmup(this.appendMany.bind(this), 1000, 2);
+        await this._clear();
+        await warmup(this.createMany.bind(this), 1000, 2);
+        await this.createMany(1000);
+        const appendRes = await this.appendMany(1000);
+        results.append = appendRes.time.toFixed(2);
+
+        await warmup(this.createMany.bind(this), 1000, 5);
+        const clearRes = await this._clear();
+        results.clear = clearRes.time.toFixed(2);
+
+        Object.keys(results).forEach(key => {
+            console.log(`${key}: ${results[key]}ms`);
+        });
+    
+        console.log('Done!', results);
+    }
+
+    async createMemoryBenchmark() {
+        const results = {};
+
+        // This isn't supported on L2, as L2 can't handle 20k items
+        // so we're skipping this part of the benchmarm
+
+        // const createRes = await this.createManyWithoutText(7000);
+        // results.create = createRes.time.toFixed(2);
+
+        // Object.keys(results).forEach(key => {
+        //     console.log(`${key}: ${results[key]}ms`);
+        // });
+
+        console.log('Memory!', undefined);
     }
 }
 
