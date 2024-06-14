@@ -19,6 +19,7 @@ import fs from "fs";
 import { runBenchmark, getBrowserVersion } from "./testrunner/runBenchmark.js";
 import { processResults } from "./testrunner/processResults.js";
 import { writeResults } from "./testrunner/writeResults.js";
+import { getJavaScriptBundleSize } from "./testrunner/totalBundlefileSize.js";
 
 if (!fs.existsSync('./dist')) {
     console.error('Please run `npm run setup` first');
@@ -77,6 +78,7 @@ dirs.forEach( (f) => {
 // run the benchmark for each framework
 let results = {};
 let memoryResults = {};
+let fileSizeResults = {};
 let idx = 0;
 
 const browserVersion = await getBrowserVersion();
@@ -92,6 +94,11 @@ const run = async (dir) => {
     const memoryResult = await runBenchmark(`http://localhost:8080/${dir}/#memory`);
     memoryResults[dir] = memoryResult;
 
+    // get the total size of the javascript bundle
+    console.log(`Getting total size of the javascript bundle for ${dir}`);
+    const fileSize = getJavaScriptBundleSize(`./dist/${dir}`);
+    fileSizeResults[dir] = fileSize;
+
     idx++;
     if (idx < dirs.length) {
         run(dirs[idx]);
@@ -104,7 +111,10 @@ const run = async (dir) => {
         console.log('Memory results:');
         console.log(memoryResults);
 
-        const processedResults = processResults(results, memoryResults);
+        console.log('File size results:');
+        console.log(fileSizeResults);
+
+        const processedResults = processResults(results, memoryResults, fileSizeResults);
         console.log('Processed results:');
         console.log(processedResults);
 
