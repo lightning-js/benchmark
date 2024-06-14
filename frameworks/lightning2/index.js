@@ -290,10 +290,14 @@ export class App extends Lightning.Application {
 
     async runBenchmark() {
         const results = {}
+
+        console.log('Starting createMany benchmark');
         
         await warmup(this.createMany.bind(this), 1000, 5);
         const createRes = await this.createMany(1000);
         results.create = createRes.time.toFixed(2);
+
+        console.log('Starting updateMany benchmark')
 
         await this.createMany(1000);
         await warmup(this.updateMany.bind(this), 1000, 5);
@@ -301,11 +305,15 @@ export class App extends Lightning.Application {
         const updateRes = await this.updateMany(1000);
         results.update = updateRes.time.toFixed(2);
 
+        console.log('Starting updateMany with skip benchmark')
+
         await this.createMany(1000);
         await warmup(this.updateMany.bind(this), [1000, 10], 5);
         await this.createMany(1000);
         const skipNthRes = await this.updateMany(1000, 10);
         results.skipNth = skipNthRes.time.toFixed(2);
+
+        console.log('Starting selectRandomNode benchmark')
 
         await this.createMany(1000);
         await warmup(this.selectRandomNode.bind(this), undefined, 5);
@@ -313,11 +321,15 @@ export class App extends Lightning.Application {
         const selectRes = await this.selectRandomNode();
         results.select = selectRes.time.toFixed(2);
 
+        console.log('Starting swapRows benchmark')
+
         await this.createMany(1000);
         await warmup(this.swapRows.bind(this), undefined, 5);
         await this.createMany(1000);
         const swapRes = await this.swapRows();
         results.swap = swapRes.time.toFixed(2);
+
+        console.log('Starting removeRow benchmark')
 
         await this.createMany(1000);
         await warmup(this.removeRow.bind(this), undefined, 5);
@@ -325,9 +337,13 @@ export class App extends Lightning.Application {
         const removeRes = await this.removeRow();
         results.remove = removeRes.time.toFixed(2);
 
+        console.log('Starting createMany with 10k items benchmark')
+
         await warmup(this.createMany.bind(this), 10000, 5);
         const createResLots = await this.createMany(10000);
         results.createLots = createResLots.time.toFixed(2);
+
+        console.log('Starting appendMany benchmark')
 
         await this._clear();
         // L2 goes out of array bounds if we append 5x1000 items
@@ -339,6 +355,8 @@ export class App extends Lightning.Application {
         await this.createMany(1000);
         const appendRes = await this.appendMany(1000);
         results.append = appendRes.time.toFixed(2);
+
+        console.log('Starting clear benchmark')
 
         await warmup(this.createMany.bind(this), 1000, 5);
         const clearRes = await this._clear();
