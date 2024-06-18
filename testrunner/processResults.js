@@ -15,7 +15,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-export const processResults = (results, memoryResults) => {
+export const processResults = (results, memoryResults, fileSizeResults) => {
     const processedResults = {};
 
     const fastestTimes = {
@@ -80,9 +80,20 @@ export const processResults = (results, memoryResults) => {
         }
 
         processedResults[f].memory = {
-            memory: memoryResults[f].heap,
-            time: memoryResults[f].create,
+            memory: memoryResults[f].heap || -1,
+            time: memoryResults[f].create || -1,
         }
+    });
+
+    // add file size results
+    frameworks.forEach(f => {
+        if (!fileSizeResults[f]) {
+            return;
+        }
+
+        // add file size to processed results
+        // convert to KB
+        processedResults[f].fileSize = (fileSizeResults[f] / 1024).toFixed(2);
     });
 
     // sort the frameworks by geometric mean

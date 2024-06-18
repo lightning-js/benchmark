@@ -31,7 +31,10 @@ export const getBrowserVersion = async () => {
 export const runBenchmark = async (url) => {
     if (!url) throw new Error('url is required');
 
-    let resolve;
+    let resolve, timeout;
+    let collectJsHeap = () => {};
+    let loaded = false;
+
     const donePromise = new Promise((r) => {
         resolve = r;
     });
@@ -49,8 +52,40 @@ export const runBenchmark = async (url) => {
     });
 
     const page = await context.newPage();
+    page.on('console', async msg => { 
+        const clearTm = () => { if (timeout) clearTimeout(timeout) };
 
-    const exit = async (results) => {
+        if (msg.text().includes('Done!')) {
+            clearTm();
+            console.log('Benchmark complete!');
+
+            const results = await msg.args()[1].jsonValue();
+            console.log('results: ', results);
+            exit(results);
+        }
+
+        if (msg.text().includes('Memory!')) {
+            clearTm();
+            console.log('Memory test complete!');
+
+            // if we have a results, get the time
+            if (msg.args().length > 1) {
+                const jsheap = await collectJsHeap();
+                const heapInMB = (jsheap / 1024 / 1024).toFixed(2);
+                const results = await msg.args()[1].jsonValue(); 
+                console.log('JS Heap: ', heapInMB, 'MB');
+                return exit({ ...results, heap: heapInMB})
+            }
+
+            // we dont have a results, test failed
+            console.error('Memory test failed');
+            return exit({ create: -1, heap: -1 });
+        }
+    });
+
+    const exit = async (results = {}) => {
+        if (!loaded) return setTimeout(() => exit(results), 1000);
+
         // Teardown
         await context.close();
         await browser.close();
@@ -67,37 +102,20 @@ export const runBenchmark = async (url) => {
     const client = await page.context().newCDPSession(page);
     await client.send('Emulation.setCPUThrottlingRate', { rate: 6 });
 
-    // create 5 min timeout
-    const timeout = setTimeout(() => {
+    // create 10 min timeout
+    timeout = setTimeout(() => {
         console.error('Timeout!');
         exit();
-    }, 1000 * 60 * 5);
+    }, 1000 * 60 * 10);
 
-    const collectJsHeap = async () => {
+    collectJsHeap = async () => {
         await client.send('Performance.enable');
         const performanceMetrics = await client.send('Performance.getMetrics');
         await client.send('Performance.disable');
         return performanceMetrics.metrics.find(m => m.name === 'JSHeapUsedSize').value;
     }
 
-    page.on('console', async msg => { 
-        if (msg.text().includes('Done!')) {
-            clearTimeout(timeout);
-
-            const results = await msg.args()[1].jsonValue(); // hello
-            console.log('results: ', results);
-            exit(results);
-        }
-
-        if (msg.text().includes('Memory!')) {
-            const jsheap = await collectJsHeap();
-            const heapInMB = (jsheap / 1024 / 1024).toFixed(2);
-
-            const results = await msg.args()[1].jsonValue(); // hello
-            console.log('JS Heap: ', heapInMB, 'MB');
-            exit({ ...results, heap: heapInMB})
-        }
-    });
+    loaded = true;
 
     return donePromise;
 }

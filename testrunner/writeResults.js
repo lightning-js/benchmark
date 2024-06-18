@@ -179,6 +179,25 @@ const table = `<table>
             {{rowsMemory}}
         </tr>
     </tbody>
+    <thead>
+        <tr>
+            <th>
+                <b>Name</b>
+                <br>
+                File size for...
+            </th>
+            {{frameworks}}
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <th>
+                <b>bundle size</b>
+                <div>JavaScript size of the framework</div>
+            </th>
+            {{rowsSize}}
+        </tr>
+    </tbody>
 </table>`;
 
 const createFile = (filename) => {
@@ -230,7 +249,14 @@ export const writeResults = (results, frameworkVersions, browserVersion) => {
     const appendRows = frameworks.map(f => `<td>${results[f].append.time} (${results[f].append.mean})</td>`).join('');
     const clearRows = frameworks.map(f => `<td>${results[f].clear.time} (${results[f].clear.mean})</td>`).join('');
     const overall = frameworks.map(f => `<td>${results[f].avgMean}</td>`).join('');
-    const rowsMemory = frameworks.map(f => `<td>${results[f].memory.memory}MB (created in ${results[f].memory.time}ms)</td>`).join('');
+    const rowsSize = frameworks.map(f => `<td>${results[f].fileSize} KB</td>`).join('');
+    const rowsMemory = frameworks.map(f => {
+        if (results[f].memory && (results[f].memory.memory !== 'NaN' || results[f].memory.time !== -1)) {
+            return `<td>${results[f].memory.memory}MB (created in ${results[f].memory.time}ms)</td>`
+        } else {
+            return `<td>Failed</td>`;
+        }
+    }).join('');
 
     fileStream.write(table
         .replace('{{frameworks}}', frameworksHeader)
@@ -246,6 +272,8 @@ export const writeResults = (results, frameworkVersions, browserVersion) => {
         .replace('{{overall}}', overall)
         .replace('{{frameworks}}', frameworksHeader)
         .replace('{{rowsMemory}}', rowsMemory)
+        .replace('{{frameworks}}', frameworksHeader)
+        .replace('{{rowsSize}}', rowsSize)
     );
     
     // write the footer

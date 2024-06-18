@@ -54,7 +54,12 @@ const test = () => {
         solid: { create: '1722.10', heap: '88.98' }
     }
 
-    const processedResults = processResults(results, memoryResults);
+    const fileSize = {
+        renderer: 512,
+        solid: 512
+    }
+
+    const processedResults = processResults(results, memoryResults, fileSize);
     console.log(JSON.stringify(processedResults));
     console.log(processedResults);
 
