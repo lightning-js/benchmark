@@ -26,9 +26,6 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
     worker: {
       format: 'es',
     },
-    blits: {
-      precompile: false,
-    },
     build: {
       target: target,
       minify: true,
