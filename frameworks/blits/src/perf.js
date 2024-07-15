@@ -151,11 +151,10 @@ const swapRows = function () {
     done = resolve
 
     const a = this.items[0]
-    const b = this.items[this.items.length - 1]
+    const b = this.items[this.items.length - 2]
 
-    this.items[1] = {...b, ...{x: a.x, y: a.y}}
-    this.items[this.items.length - 2] = {...a, ...{x: b.x, y: b.y}}
-
+    this.items[0] = { ...b, ...{ x: a.x, y: a.y } }
+    this.items[this.items.length - 2] = { ...a, ...{ x: b.x, y: b.y } }
   })
 }
 
@@ -181,7 +180,6 @@ const appendMany = function (amount) {
     }
 
     this.items = newItems
-
   })
 }
 
