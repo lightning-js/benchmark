@@ -231,32 +231,34 @@ export class App extends Lightning.Application {
 
     swapRows() {
         return new Promise( resolve => {
-            const swapPerf = performance.now();
-            const a = this.tag('Items').childList.getAt(998);
-            const b = this.tag('Items').childList.getAt(1);
-         
-            const temp = a;
-            a.patch({
-                x: b.x,
-                y: b.y,
-                color: b.color,
-                Label: {
-                    text: { text: b.data.text, textColor: b.data.textColor }
-                }
-            });
+            return this.createMany().then( () => {
+                const swapPerf = performance.now();
+                this.stage.once('idle', () => {
+                    const time = performance.now() - swapPerf;
+                    resolve({ time });
+                });
 
-            b.patch({
-                x: temp.x,
-                y: temp.y,
-                color: temp.color,
-                Label: {
-                    text: { text: temp.data.text, textColor: temp.data.textColor }
-                }
-            });
+                const a = this.tag('Items').childList.getAt(998);
+                const b = this.tag('Items').childList.getAt(1);
+            
+                const temp = a;
+                a.patch({
+                    x: b.x,
+                    y: b.y,
+                    color: b.color,
+                    Label: {
+                        text: { text: b.data.text, textColor: b.data.textColor }
+                    }
+                });
 
-            this.stage.once('idle', () => {
-                const time = performance.now() - swapPerf;
-                resolve({ time });
+                b.patch({
+                    x: temp.x,
+                    y: temp.y,
+                    color: temp.color,
+                    Label: {
+                        text: { text: temp.data.text, textColor: temp.data.textColor }
+                    }
+                });
             });
         });
     }
@@ -313,7 +315,7 @@ export class App extends Lightning.Application {
         const skipNthRes = await this.updateMany(1000, 10);
         results.skipNth = skipNthRes.time.toFixed(2);
 
-        console.log('Starting selectRandomNode benchmark')
+        console.log('Starting selectRandomNode benchmark');
 
         await this.createMany(1000);
         await warmup(this.selectRandomNode.bind(this), undefined, 5);
@@ -321,15 +323,13 @@ export class App extends Lightning.Application {
         const selectRes = await this.selectRandomNode();
         results.select = selectRes.time.toFixed(2);
 
-        console.log('Starting swapRows benchmark')
+        console.log('Starting swapRows benchmark');
 
-        await this.createMany(1000);
         await warmup(this.swapRows.bind(this), undefined, 5);
-        await this.createMany(1000);
         const swapRes = await this.swapRows();
         results.swap = swapRes.time.toFixed(2);
 
-        console.log('Starting removeRow benchmark')
+        console.log('Starting removeRow benchmark');
 
         await this.createMany(1000);
         await warmup(this.removeRow.bind(this), undefined, 5);
@@ -337,13 +337,13 @@ export class App extends Lightning.Application {
         const removeRes = await this.removeRow();
         results.remove = removeRes.time.toFixed(2);
 
-        console.log('Starting createMany with 10k items benchmark')
+        console.log('Starting createMany with 10k items benchmark');
 
         await warmup(this.createMany.bind(this), 10000, 5);
         const createResLots = await this.createMany(10000);
         results.createLots = createResLots.time.toFixed(2);
 
-        console.log('Starting appendMany benchmark')
+        console.log('Starting appendMany benchmark');
 
         await this._clear();
         // L2 goes out of array bounds if we append 5x1000 items
@@ -356,7 +356,7 @@ export class App extends Lightning.Application {
         const appendRes = await this.appendMany(1000);
         results.append = appendRes.time.toFixed(2);
 
-        console.log('Starting clear benchmark')
+        console.log('Starting clear benchmark');
 
         await warmup(this.createMany.bind(this), 1000, 5);
         const clearRes = await this._clear();
