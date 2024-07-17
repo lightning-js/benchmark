@@ -1,6 +1,5 @@
 import { defineConfig } from "vite";
 import path from "path";
-import { importChunkUrl } from "@lightningjs/vite-plugin-import-chunk-url";
 import { viteStaticCopy } from "vite-plugin-static-copy";
 
 const target = "esnext";
@@ -8,7 +7,6 @@ const target = "esnext";
 export default defineConfig({
   base: "./",
   plugins: [
-    importChunkUrl(),
     viteStaticCopy({
       targets: [
         {
