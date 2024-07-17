@@ -15,11 +15,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import coreExtensionModuleUrl from "./AppCoreExtensions.js?importChunkUrl";
 
 import {
-  MainCoreDriver,
-  RendererMain
+    RendererMain,
+    SdfTrFontFace,
 } from '@lightningjs/renderer';
 
 import { colours, adjectives, nouns } from '../../shared/data';
@@ -28,22 +27,34 @@ import { warmup } from '../../shared/utils/warmup';
 const appHeight = 1080;
 const appWidth = 1900;
 
-const driver = new MainCoreDriver();
 const renderer = new RendererMain({
     appWidth: appWidth,
     appHeight: appHeight,
     clearColor: 0x00000000,
     enableInspector: false,
-    coreExtensionModule: coreExtensionModuleUrl,
-}, 'app', driver);
-
-await renderer.init();
+    numImageWorkers: 1,
+}, 'app');
 
 let rootNode = renderer.createNode({
   color: 0,
   parent: renderer.root,
 });
 
+renderer.stage.fontManager.addFontFace(
+    new SdfTrFontFace('msdf', {
+        fontFamily: 'Ubuntu',
+        descriptors: {},
+        atlasUrl: './fonts/Ubuntu-Bold.msdf.png',
+        atlasDataUrl: './fonts/Ubuntu-Bold.msdf.json',
+        stage: renderer.stage,
+        metrics: {
+            ascender: 850,
+            descender: -250,
+            lineGap: 60,
+            unitsPerEm: 1000,
+        },
+    })
+);
 
 const pick = dict => dict[Math.round(Math.random() * 1000) % dict.length];
 
