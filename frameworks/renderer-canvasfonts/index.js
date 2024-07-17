@@ -18,7 +18,6 @@
 
 import {
     RendererMain,
-    SdfTrFontFace,
 } from '@lightningjs/renderer';
 
 import { colours, adjectives, nouns } from '../../shared/data';
@@ -39,7 +38,6 @@ let rootNode = renderer.createNode({
   color: 0,
   parent: renderer.root,
 });
-
 
 const pick = dict => dict[Math.round(Math.random() * 1000) % dict.length];
 
