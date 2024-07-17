@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Lightning JS Framework benchmark</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 0;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            th, td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+            th {
+                background-color: #f2f2f2;
+            }
+            h2 {
+                margin: 0;
+            }
+            p {
+                margin: 0;
+            }
+            div {
+                padding: 10px;
+            }
+            span {
+                font-weight: bold;
+            }
+        </style>
+    </head>
+    <body><div>
+    <h2>Results for Lightning JS Framework benchmark</h2>
+    <p>The benchmark was run on <span>darwin 23.5.0 arm64</span> on a <span>Apple M3 Max 14 and 36.00 GB memory</span></p>
+    <p>Tests where executed on browser version: <span id="browserVersion">Chromium 125.0.6422.26</span> using PlayWright</p>
+</div><div>
+    <h2>Results</h2>
+    <p>Tests are run by executing an operation and waiting for the WebGL rennder to be Idle</p>
+    <p>Results are the time in milliseconds to execute the operation</p>
+    <p>All operations are executed on 6x CPU slowdown</p>
+</div><table>
+    <thead>
+        <tr>
+            <th>
+                <b>Name</b>
+                <br>
+                Duration for...
+            </th>
+            <th>blits 1.0.0</th><th>lightning2 2.14.0</th><th>renderer 1.0.0</th><th>renderer-canvasfonts 1.0.0</th><th>solid 0.16.1</th>
+        </tr>
+
+    </thead>
+    <tbody>
+        <tr>
+            <th>
+                <b>create rows</b>
+                <div>creating 1,000 nodes. (5 warmup runs)</div>
+            </th>
+            <td>114.10 (1.64)</td><td>229.10 (3.29)</td><td>69.60 (1.00)</td><td>371.90 (5.34)</td><td>128.80 (1.85)</td>
+        </tr>
+        <tr>
+            <th>
+                <b>replace all rows</b>
+                <div>updating all 1,000 nodes. (5 warmup runs)</div>
+            </th>
+            <td>40.50 (1.06)</td><td>3598.60 (93.96)</td><td>38.30 (1.00)</td><td>302.70 (7.90)</td><td>57.80 (1.51)</td>
+        </tr>
+        <tr>
+            <th>
+                <b>partial update rows</b>
+                <div>updating every 10th node for 1,000 nodes. (5 warmup runs)</div>
+            </th>
+            <td>33.50 (1.02)</td><td>214.50 (6.56)</td><td>32.70 (1.00)</td><td>52.00 (1.59)</td><td>33.50 (1.02)</td>
+        </tr>
+        <tr>
+            <th>
+                <b>select row</b>
+                <div>selecting a node at random. (5 warmup runs)</div>
+            </th>
+            <td>50.60 (3.33)</td><td>15.20 (1.00)</td><td>33.20 (2.18)</td><td>40.30 (2.65)</td><td>32.40 (2.13)</td>
+        </tr>
+        <tr>
+            <th>
+                <b>swap rows</b>
+                <div>swapping 2 nodes. (5 warmup runs)</div>
+            </th>
+            <td>54.70 (11.64)</td><td>4.70 (1.00)</td><td>50.90 (10.83)</td><td>34.50 (7.34)</td><td>214.50 (45.64)</td>
+        </tr>
+        <tr>
+            <th>
+                <b>remove row</b>
+                <div>removing a node. (5 warmup runs)</div>
+            </th>
+            <td>33.40 (6.68)</td><td>5.00 (1.00)</td><td>33.20 (6.64)</td><td>26.40 (5.28)</td><td>35.10 (7.02)</td>
+        </tr>
+        <tr>
+            <th>
+                <b>create many rows</b>
+                <div>creating 10,000 nodes. (5 warmup runs)</div>
+            </th>
+            <td>735.20 (2.73)</td><td>2229.70 (8.27)</td><td>269.70 (1.00)</td><td>1564.30 (5.80)</td><td>904.50 (3.35)</td>
+        </tr>
+        <tr>
+            <th>
+                <b>append rows</b>
+                <div>appending 1,000 nodes to 1,000 nodes. (5 warmup runs)</div>
+            </th>
+            <td>135.40 (1.42)</td><td>249.80 (2.62)</td><td>119.40 (1.25)</td><td>368.60 (3.87)</td><td>95.30 (1.00)</td>
+        </tr>
+        <tr>
+            <th>
+                <b>clear rows</b>
+                <div>removing all nodes. (5 warmup runs)</div>
+            </th>
+            <td>19.10 (1.00)</td><td>59.70 (3.13)</td><td>26.10 (1.37)</td><td>27.90 (1.46)</td><td>112.40 (5.88)</td>
+        </tr>
+        <tr>
+            <th>
+                <b>Overall</b>
+                <div>Average mean of all tests</div>
+            </th>
+            <td>3.39</td><td>13.43</td><td>2.92</td><td>4.58</td><td>7.71</td>
+        </tr>
+    </tbody>
+    <thead>
+        <tr>
+            <th>
+                <b>Name</b>
+                <br>
+                Memory for...
+            </th>
+            <th>blits 1.0.0</th><th>lightning2 2.14.0</th><th>renderer 1.0.0</th><th>renderer-canvasfonts 1.0.0</th><th>solid 0.16.1</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <th>
+                <b>create 20k nodes</b>
+                <div>creating 20k nodes.</div>
+            </th>
+            <td>38.71MB (created in 314.40ms)</td><td>Failed</td><td>27.61MB (created in 268.30ms)</td><td>25.20MB (created in 283.90ms)</td><td>88.98MB (created in 643.50ms)</td>
+        </tr>
+    </tbody>
+    <thead>
+        <tr>
+            <th>
+                <b>Name</b>
+                <br>
+                File size for...
+            </th>
+            <th>blits 1.0.0</th><th>lightning2 2.14.0</th><th>renderer 1.0.0</th><th>renderer-canvasfonts 1.0.0</th><th>solid 0.16.1</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <th>
+                <b>bundle size</b>
+                <div>JavaScript size of the framework</div>
+            </th>
+            <td>463.48 KB</td><td>329.43 KB</td><td>159.54 KB</td><td>159.30 KB</td><td>204.63 KB</td>
+        </tr>
+    </tbody>
+</table></body>
+    </html>
