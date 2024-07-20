@@ -33,12 +33,11 @@ const pick = dict => dict[Math.round(Math.random() * 1000) % dict.length];
 
 const options = {
     stage: {
-        w: 1080,
-        h: 1920,
-        clearColor: 0xFF000000,
+        w: 1920,
+        h: 1080,
+        clearColor: 0x00000000,
         canvas2d: false,
         useImageWorker: true,
-        pauseRafLoopOnIdle: true,
         // bufferSize: 4e6, // WvB tried to raise this to 4M but it didn't work for the 20k items test
     },
     debug: false,
@@ -50,12 +49,13 @@ class Block extends Lightning.Component {
             x: 0, y: 0,
             rect: true, w: 200, h: 40, color: 0x00000000,
             Label: {
-                x: 5, y: 2, w: 200, h: 40, text: { text: '', fontSize: 26, fontFace: 'Ubuntu', textColor: 0xFFFFFFFF}
+                x: 5, y: 2,
+                text: { text: '', fontSize: 26, fontFace: 'sans-serif', textColor: 0xFFFFFFFF, wordWrap: false }
             }
         }
     }
 
-    _firstActive() {
+    _init() {
         const { color, textColor, text, index } = this.data;
 
         const x = index % 27 * 40
@@ -65,9 +65,7 @@ class Block extends Lightning.Component {
             x: x,
             y: y,
             color: color || 0x00000000,
-            Label: {
-                text: { text: text, fontSize: 26, fontFace: 'Ubuntu', textColor: textColor || 0xFFFFFFFF}
-            }
+            Label: { text: { text: text, textColor: textColor || 0xFFFFFFFF } },
         });
     }
 }
@@ -80,7 +78,7 @@ class BlockNoText extends Lightning.Component {
         }
     }
 
-    _firstActive() {
+    _init() {
         const { color, index } = this.data;
 
         const x = index % 216 * 4
@@ -112,8 +110,8 @@ export class App extends Lightning.Application {
         }
     }
 
-    _createRow(index) {
-        this.tag('Items').childList.add({
+    _createRow(items, index) {
+        items.childList.add({
             type: Block, 
             data: {
                 color: pick(colours),
@@ -140,11 +138,12 @@ export class App extends Lightning.Application {
         return new Promise( resolve => {
             this._clear().then(() => {
                 const createPerf = performance.now();
+                const items = this.tag('Items');
                 for (let i = 0; i < amount; i++) {
-                    this._createRow(i);
+                    this._createRow(items, i);
                 }
 
-                this.stage.once('idle', () => {
+                this.stage.once('frameEnd', () => {
                     const time = performance.now() - createPerf;
                     resolve({ time });
                 });
@@ -157,8 +156,9 @@ export class App extends Lightning.Application {
         return new Promise( resolve => {
             this._clear().then(() => {
                 const createPerf = performance.now();
+                const items = this.tag('Items');
                 for (let i = 0; i < amount; i++) {
-                    this.tag('Items').childList.add({
+                    items.childList.add({
                         type: BlockNoText,
                         data: {
                             color: pick(colours),
@@ -167,7 +167,7 @@ export class App extends Lightning.Application {
                     });
                 }
 
-                this.stage.once('idle', () => {
+                this.stage.once('frameEnd', () => {
                     const time = performance.now() - createPerf;
                     resolve({ time });
                 });
@@ -178,8 +178,9 @@ export class App extends Lightning.Application {
     updateMany(count, skip = 0) {
         return new Promise( resolve => {
             const updatePerf = performance.now();
+            const items = this.tag('Items');
             for (let i = 0; i < count; i += (skip + 1)) {
-                const child = this.tag('Items').childList.getAt(i);
+                const child = items.childList.getAt(i);
                 if (child) {
                     child.patch({
                         color: pick(colours),
@@ -190,7 +191,7 @@ export class App extends Lightning.Application {
                 }
             }
 
-            this.stage.once('idle', () => {
+            this.stage.once('frameEnd', () => {
                 const time = performance.now() - updatePerf;
                 resolve({ time });
             });
@@ -217,11 +218,11 @@ export class App extends Lightning.Application {
                 label.patch({
                     x: 10,
                     y: 10,
-                    text: { text: text, fontSize: 40, textColor: 0xFF000000 }
+                    text: { fontSize: 128, textColor: 0xFF000000 }
                 });
             }
 
-            this.stage.once('idle', () => {
+            this.stage.once('frameEnd', () => {
                 const time = performance.now() - selectPerf;
                 resolve({ time });
             });
@@ -233,7 +234,7 @@ export class App extends Lightning.Application {
         return new Promise( resolve => {
             return this.createMany().then( () => {
                 const swapPerf = performance.now();
-                this.stage.once('idle', () => {
+                this.stage.once('frameEnd', () => {
                     const time = performance.now() - swapPerf;
                     resolve({ time });
                 });
@@ -241,8 +242,10 @@ export class App extends Lightning.Application {
                 const a = this.tag('Items').childList.getAt(998);
                 const b = this.tag('Items').childList.getAt(1);
             
-                const temp = a;
+                const { x, y, data } = a;
+                
                 a.patch({
+                    data: b.data,
                     x: b.x,
                     y: b.y,
                     color: b.color,
@@ -252,11 +255,12 @@ export class App extends Lightning.Application {
                 });
 
                 b.patch({
-                    x: temp.x,
-                    y: temp.y,
-                    color: temp.color,
+                    data: data,
+                    x: x,
+                    y: y,
+                    color: data.color,
                     Label: {
-                        text: { text: temp.data.text, textColor: temp.data.textColor }
+                        text: { text: data.text, textColor: data.textColor }
                     }
                 });
             });
@@ -269,7 +273,7 @@ export class App extends Lightning.Application {
             const index = Math.floor(Math.random() * this.tag('Items').childList.length);
             this.tag('Items').childList.removeAt(index);
 
-            this.stage.once('idle', () => {
+            this.stage.once('frameEnd', () => {
                 const time = performance.now() - removePerf;
                 resolve({ time });
             });
@@ -279,11 +283,12 @@ export class App extends Lightning.Application {
     appendMany(amount = 1000) {
         return new Promise( resolve => {
             const appendPerf = performance.now();
+            const items = this.tag('Items')
             for (let i = 0; i < amount; i++) {
-                this._createRow(i);
+                this._createRow(items, i);
             }
 
-            this.stage.once('idle', () => {
+            this.stage.once('frameEnd', () => {
                 const time = performance.now() - appendPerf;
                 resolve({ time });
             });

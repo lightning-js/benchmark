@@ -25,7 +25,7 @@ import { colours, adjectives, nouns } from '../../shared/data';
 import { warmup } from '../../shared/utils/warmup';
 
 const appHeight = 1080;
-const appWidth = 1900;
+const appWidth = 1920;
 
 const renderer = new RendererMain({
     appWidth: appWidth,
