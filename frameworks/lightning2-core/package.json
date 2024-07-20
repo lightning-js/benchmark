@@ -1,0 +1,19 @@
+{
+  "name": "lightning2",
+  "version": "0.0.1",
+  "description": "Lightning 2 based benchmark",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "dist": "vite build --mode production"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "vite": "^5.2.13"
+  },
+  "dependencies": {
+    "@lightningjs/core": "^2.14.0"
+  }
+}
