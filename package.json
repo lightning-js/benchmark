@@ -5,21 +5,10 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "build:renderer": "cd frameworks/renderer && npm install && npm run dist",
-    "build:renderer:canvas": "cd frameworks/renderer-canvasfonts && npm install && npm run dist",
-    "build:solid": "cd frameworks/solid && npm install && npm run dist",
-    "build:blits": "cd frameworks/blits && npm install && npm run dist",
-    "build:lightning2": "cd frameworks/lightning2 && npm run dist",
-    "build": "npm run build:renderer && npm run build:renderer:canvas && npm run build:solid && npm run build:blits && npm run build:lightning2",
-    "copy:renderer": "node -e \"require('fs').cpSync('./frameworks/renderer/dist', './dist/renderer', {recursive: true});\"",
-    "copy:renderer:canvas": "node -e \"require('fs').cpSync('./frameworks/renderer-canvasfonts/dist', './dist/renderer-canvasfonts', {recursive: true});\"",
-    "copy:solid": "node -e \"require('fs').cpSync('./frameworks/solid/dist', './dist/solid', {recursive: true});\"",
-    "copy:blits": "node -e \"require('fs').cpSync('./frameworks/blits/dist', './dist/blits', {recursive: true});\"",
-    "copy:lightning2": "node -e \"require('fs').cpSync('./frameworks/lightning2/dist', './dist/lightning2', {recursive: true});\"",
-    "copy": "npm run copy:renderer && npm run copy:renderer:canvas && npm run copy:solid && npm run copy:blits && npm run copy:lightning2",
-    "setup": "npm install && npm run build && npm run copy",
+    "build": "node build.js",
+    "setup": "npm install && npm run build",
     "setup:playwright": "npx playwright install",
-    "start": "concurrently --kill-others --success last \"npx http-server -c-1 ./dist/\" \"node index.js\""
+    "start": "concurrently --kill-others --success last \"npx http-server -c-1 ./dist/\" \"node index.js --only lightning2 renderer-canvasfonts\""
   },
   "author": "",
   "license": "MIT",
@@ -27,5 +16,8 @@
     "concurrently": "^8.2.2",
     "http-server": "^14.1.1",
     "playwright": "^1.44.0"
+  },
+  "devDependencies": {
+    "dotenv": "^16.4.5"
   }
 }
