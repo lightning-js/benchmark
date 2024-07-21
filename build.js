@@ -1,6 +1,7 @@
+// @ts-nocheck - Shelljs has no types, so it trips up the TypeScript compiler
 import * as dotenv from 'dotenv';
 import * as fs from 'fs';
-import { execSync } from 'child_process';
+import shell from 'shelljs';
 
 // get configuration
 dotenv.config();
@@ -17,12 +18,15 @@ if (dirs.length === 0) {
 }
 
 // clear dist
-execSync('rm -rf dist', { shell: true  });
-execSync('mkdir dist', { shell: true  });
+shell.rm('-rf', 'dist');
+shell.mkdir('dist');
 
 // build & copy
 dirs.forEach((name) => {
   console.log('Building', name, '...');
-  execSync(`cd frameworks/${name} && npm install && npm run dist`, { shell: true  });
-  execSync(`cp -r frameworks/${name}/dist dist/${name}`);
+  shell.cd(`frameworks/${name}`);
+  shell.exec('npm install');
+  shell.exec('npm run dist');
+  shell.cp('-r', 'dist', `../../dist/${name}`);
+  shell.cd('../..');
 });
