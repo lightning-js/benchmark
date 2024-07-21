@@ -43,55 +43,6 @@ const options = {
     debug: false,
 }
 
-class Block extends Lightning.Component {
-    static _template() {
-        return {
-            x: 0, y: 0,
-            rect: true, w: 200, h: 40, color: 0x00000000,
-            Label: {
-                x: 5, y: 2,
-                text: { text: '', fontSize: 26, fontFace: 'sans-serif', textColor: 0xFFFFFFFF, wordWrap: false }
-            }
-        }
-    }
-
-    _init() {
-        const { color, textColor, text, index } = this.data;
-
-        const x = index % 27 * 40
-        const y  = ~~( index / 27 ) * 40
-
-        this.patch({
-            x: x,
-            y: y,
-            color: color || 0x00000000,
-            Label: { text: { text: text, textColor: textColor || 0xFFFFFFFF } },
-        });
-    }
-}
-
-class BlockNoText extends Lightning.Component {
-    static _template() {
-        return {
-            x: 0, y: 0,
-            rect: true, w: 4, h: 4, color: 0xFF000000,
-        }
-    }
-
-    _init() {
-        const { color, index } = this.data;
-
-        const x = index % 216 * 4
-        const y  = ~~( index / 216 ) * 4
-
-        this.patch({
-            x: x,
-            y: y,
-            color: color,
-        });
-    }
-}
-
 export class App extends Lightning.Application {
     static _template() {
         return {
@@ -111,13 +62,22 @@ export class App extends Lightning.Application {
     }
 
     _createRow(items, index) {
+        const data = {
+            color: pick(colours),
+            textColor: pick(colours),
+            text: `${pick(adjectives)} ${pick(nouns)}`,
+        }
+
+        const x = index % 27 * 40
+        const y  = ~~( index / 27 ) * 40
+
         items.childList.add({
-            type: Block, 
-            data: {
-                color: pick(colours),
-                textColor: pick(colours),
-                text: `${pick(adjectives)} ${pick(nouns)}`,
-                index: index
+            data,
+            x, y,
+            rect: true, w: 200, h: 40, color: data.color || 0x00000000,
+            Label: {
+                x: 5, y: 2,
+                text: { text: data.text, fontSize: 26, fontFace: 'sans-serif', textColor: data.textColor || 0xFFFFFFFF, wordWrap: false }
             }
         });
     }
@@ -158,12 +118,14 @@ export class App extends Lightning.Application {
                 const createPerf = performance.now();
                 const items = this.tag('Items');
                 for (let i = 0; i < amount; i++) {
+                    const color = pick(colours);
+                    const index = i;
+                    const x = index % 216 * 4;
+                    const y  = ~~( index / 216 ) * 4;
+
                     items.childList.add({
-                        type: BlockNoText,
-                        data: {
-                            color: pick(colours),
-                            index: i
-                        }
+                        x, y,
+                        rect: true, w: 4, h: 4, color: color || 0xFF000000,
                     });
                 }
 
@@ -188,6 +150,11 @@ export class App extends Lightning.Application {
                             text: { text: `${pick(adjectives)} ${pick(nouns)}`, textColor: pick(colours) },
                         }
                     });
+                    // Note: this is oddly slower than `patch`
+                    // child.color = pick(colours);
+                    // const label = child.childList.getAt(0);
+                    // label.text.text = `${pick(adjectives)} ${pick(nouns)}`;
+                    // label.text.textColor = pick(colours);
                 }
             }
 
@@ -201,9 +168,9 @@ export class App extends Lightning.Application {
     selectRandomNode() {
         return new Promise( resolve => {
             const selectPerf = performance.now();
-            const index = Math.floor(Math.random() * this.tag('Items').childList.length);
-            const child = this.tag('Items').childList.getAt(index);
-            const text = child.data.text;
+            const items = this.tag('Items');
+            const index = Math.floor(Math.random() * items.childList.length);
+            const child = items.childList.getAt(index);
 
             if (child) {
                 child.patch({
@@ -212,13 +179,10 @@ export class App extends Lightning.Application {
                     color: 0xFFFF0000, //RED
                     w: 1200,
                     h: 400,
-                });
-
-                const label = child.tag('Label');
-                label.patch({
-                    x: 10,
-                    y: 10,
-                    text: { fontSize: 128, textColor: 0xFF000000 }
+                    Label: {
+                        x: 10, y: 10, 
+                        text: { fontSize: 128, textColor: 0xFF000000 } 
+                    },
                 });
             }
 
@@ -239,16 +203,17 @@ export class App extends Lightning.Application {
                     resolve({ time });
                 });
 
-                const a = this.tag('Items').childList.getAt(998);
-                const b = this.tag('Items').childList.getAt(1);
+                const items = this.tag('Items');
+                const a = items.childList.getAt(998);
+                const b = items.childList.getAt(1);
             
                 const { x, y, data } = a;
-                
+
                 a.patch({
                     data: b.data,
                     x: b.x,
                     y: b.y,
-                    color: b.color,
+                    color: b.data.color,
                     Label: {
                         text: { text: b.data.text, textColor: b.data.textColor }
                     }
@@ -270,8 +235,9 @@ export class App extends Lightning.Application {
     removeRow() {
         return new Promise( resolve => {
             const removePerf = performance.now();
-            const index = Math.floor(Math.random() * this.tag('Items').childList.length);
-            this.tag('Items').childList.removeAt(index);
+            const items = this.tag('Items');
+            const index = Math.floor(Math.random() * items.childList.length);
+            items.childList.removeAt(index);
 
             this.stage.once('frameEnd', () => {
                 const time = performance.now() - removePerf;
@@ -283,7 +249,7 @@ export class App extends Lightning.Application {
     appendMany(amount = 1000) {
         return new Promise( resolve => {
             const appendPerf = performance.now();
-            const items = this.tag('Items')
+            const items = this.tag('Items');
             for (let i = 0; i < amount; i++) {
                 this._createRow(items, i);
             }
