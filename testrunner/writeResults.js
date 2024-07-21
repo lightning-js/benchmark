@@ -209,7 +209,12 @@ const createFile = (filename) => {
     return fs.createWriteStream(`./results/${filename}`);
 }
 
-
+/**
+ * Writes benchmark results to an HTML file.
+ * @param {Object} results - The benchmark results.
+ * @param {Object} frameworkVersions - The versions of the frameworks used in the benchmark.
+ * @param {string} browserVersion - The version of the browser used for the benchmark.
+ */
 export const writeResults = (results, frameworkVersions, browserVersion) => {
     const osVersion = getOSInfo();
     const systemVersion = getSystemInfo();

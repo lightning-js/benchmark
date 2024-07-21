@@ -15,18 +15,32 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+/**
+ * This script runs benchmarks for multiple frameworks.
+ * It retrieves the framework versions, runs the benchmarks,
+ * collects the results, and writes them to a file.
+ */
+
 import fs from "fs";
 import { runBenchmark, getBrowserVersion } from "./testrunner/runBenchmark.js";
 import { processResults } from "./testrunner/processResults.js";
 import { writeResults } from "./testrunner/writeResults.js";
 import { getJavaScriptBundleSize } from "./testrunner/totalBundlefileSize.js";
 
+/**
+ * Checks if the './dist' directory exists.
+ * If it doesn't exist, it logs an error message and exits the process.
+ */
 if (!fs.existsSync('./dist')) {
     console.error('Please run `npm run setup` first');
     process.exit(1);
 }
 
-// import the package.json and grab the framework version
+/**
+ * Looks up the version of a framework by reading its package.json and package-lock.json files.
+ * @param {string} dir - The directory of the framework.
+ * @returns {string} The version of the framework.
+ */
 const lookupFrameworkVersion = (dir) => {
     if (!fs.existsSync(`./frameworks/${dir}/package.json`)) {
         return '';
@@ -59,11 +73,18 @@ const lookupFrameworkVersion = (dir) => {
     return packageLock.packages[dependencyString].version;
 }
 
-// get list of subdirectories in the dist folder
+/**
+ * Retrieves the list of subdirectories in the './dist' folder.
+ * @returns {string[]} An array of subdirectory names.
+ */
 const dirs = fs.readdirSync('./dist', { withFileTypes: true })
     .filter(dirent => dirent.isDirectory())
     .map(dirent => dirent.name);
 
+/**
+ * Checks if there are any frameworks to benchmark.
+ * If there are no frameworks, it logs an error message and exits the process.
+ */
 if (dirs.length === 0) {
     console.error('No frameworks to benchmark, please ensure you have at least one framework in the dist folder');
     process.exit(1);
@@ -75,16 +96,51 @@ dirs.forEach( (f) => {
     frameworkVersions[f] = version;
 });
 
-// run the benchmark for each framework
-let results = {};
-let memoryResults = {};
-let fileSizeResults = {};
+/**
+ * Runs the benchmark for each framework.
+ * Collects the benchmark results, memory results, and file size results.
+ */
+
+/**
+ * The benchmark results object.
+ * @typedef {import('./testrunner/types/results.js').Results} Results
+ * @typedef {import('./testrunner/types/memoryResults.js').MemoryResults} MemoryResults
+ * @typedef {import('./testrunner/types/fileSizeResults.js').FileSizeResults} FileSizeResults
+ * 
+ * @typedef {?Results} results
+ */
+let results = null;
+
+/**
+ * The memory results object.
+ * @typedef {?MemoryResults} memoryResults
+ */
+let memoryResults = null;
+
+/**
+ * The file size results object.
+ * @typedef {?FileSizeResults} fileSizeResults
+*/
+let fileSizeResults = null;
 let idx = 0;
 
+/**
+ * Retrieves the browser version and logs it.
+ */
 const browserVersion = await getBrowserVersion();
 console.log('Browser version:', browserVersion);
 
+/**
+ * Runs the benchmark for a specific framework.
+ * @param {string} dir - The directory of the framework.
+ */
 const run = async (dir) => {
+    if (results === null) results = {};
+    if (memoryResults === null) memoryResults = {};
+    if (fileSizeResults === null) fileSizeResults = {};
+
+    results[dir] = createNewResult();
+
     console.log(`Running benchmark for ${dir}`);
     const result = await runBenchmark(`http://localhost:8080/${dir}/`);
     results[dir] = result;
@@ -120,6 +176,25 @@ const run = async (dir) => {
 
         console.log('Writing results...');
         writeResults(processedResults, frameworkVersions, browserVersion);
+    }
+}
+
+/**
+ * Initializes the results object.
+ * @typedef {import('./testrunner/types/results.js').Result} Result
+ * @returns {Result} The results object.
+ */
+const createNewResult = () => {
+    return {
+        create: null,
+        update: null,
+        skipNth: null,
+        select: null,
+        swap: null,
+        remove: null,
+        createLots: null,
+        append: null,
+        clear: null
     }
 }
 

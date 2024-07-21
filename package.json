@@ -18,6 +18,8 @@
     "playwright": "^1.44.0"
   },
   "devDependencies": {
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.5",
+    "@types/node": "^20.14.11",
+    "jsdoc": "^4.0.3"
   }
 }
