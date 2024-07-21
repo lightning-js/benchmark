@@ -15,8 +15,18 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+
+/**
+ * This file contains functions for running benchmarks and getting browser version.
+ * @module runBenchmark
+ */
+
 import { chromium } from 'playwright';
 
+/**
+ * Gets the version of the Chromium browser.
+ * @returns {Promise<string>} The version of the Chromium browser.
+ */
 export const getBrowserVersion = async () => {
     const browser = await chromium.launch({ 
         headless: true
@@ -28,6 +38,17 @@ export const getBrowserVersion = async () => {
     return browserVersion;
 }
 
+/**
+ * Runs a benchmark on the specified URL.
+ * 
+ * @typedef {import('./types/results.js').Result} Result
+ * @typedef {import('./types/memoryResults.js').MemoryResult} MemoryResult
+ * @typedef {import('./types/fileSizeResults.js').FileSizeResults} FileSizeResults
+ * 
+ * @param {string} url - The URL to run the benchmark on.
+ * @returns {Promise<Result & MemoryResult>} A promise that resolves with the benchmark results.
+ * @throws {Error} If the URL is not provided.
+ */
 export const runBenchmark = async (url) => {
     if (!url) throw new Error('url is required');
 
@@ -71,6 +92,7 @@ export const runBenchmark = async (url) => {
             // if we have a results, get the time
             if (msg.args().length > 1) {
                 const jsheap = await collectJsHeap();
+                // @ts-ignore
                 const heapInMB = (jsheap / 1024 / 1024).toFixed(2);
                 const results = await msg.args()[1].jsonValue(); 
                 console.log('JS Heap: ', heapInMB, 'MB');
@@ -83,8 +105,16 @@ export const runBenchmark = async (url) => {
         }
     });
 
-    const exit = async (results = {}) => {
-        if (!loaded) return setTimeout(() => exit(results), 1000);
+    /**
+     * Exits the benchmark and closes the browser.
+     * @param {Result|MemoryResult} [results={}] - The benchmark results.
+     * @returns {Promise<void>}
+     */
+    const exit = async (results) => {
+        if (!loaded) { 
+            setTimeout(() => exit(results), 1000)
+            return Promise.resolve();
+        }
 
         // Teardown
         await context.close();
@@ -108,6 +138,10 @@ export const runBenchmark = async (url) => {
         exit();
     }, 1000 * 60 * 10);
 
+    /**
+     * Collects the JavaScript heap size.
+     * @returns {Promise<number>} The JavaScript heap size in bytes.
+     */
     collectJsHeap = async () => {
         await client.send('Performance.enable');
         const performanceMetrics = await client.send('Performance.getMetrics');
