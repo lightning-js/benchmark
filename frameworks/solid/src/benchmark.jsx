@@ -18,36 +18,27 @@
 import {
     createSignal,
     For,
+    Index
   } from "solid-js";
-import { Text, View, hexColor } from "@lightningjs/solid";
+import { Text, View } from "@lightningtv/solid";
 import { colours, adjectives, nouns } from '../../../shared/data';
 import { warmup } from "../../../shared/utils/warmup";
 
 import { pick } from "./utils/pick";
 import { getRenderer } from "./utils/renderer";
 
-let idCounter = 1;
 function buildData(count) {
     let data = new Array(count);
     for (let i = 0; i < count; i++) {
-        const [label, setLabel] = createSignal(`${pick(adjectives)} ${pick(nouns)}`);
-        const [color, setColor] = createSignal(pick(colours));
-        const [textColor, setTextColor] = createSignal(pick(colours));
-        const [width, setW] = createSignal(200);
-        const [height, setH] = createSignal(40);
-        const [x, setX] = createSignal(null);
-        const [y, setY] = createSignal(null);
-        const [fontSize, setFontSize] = createSignal(26);
         data[i] = {
-            id: idCounter++,
-            label, setLabel,
-            color, setColor,
-            textColor, setTextColor,
-            width, setW,
-            height, setH,
-            x, setX,
-            y, setY,
-            fontSize, setFontSize
+            label: `${pick(adjectives)} ${pick(nouns)}`,
+            color: pick(colours),
+            textColor: pick(colours),
+            width: 200,
+            height: 40,
+            x: (i % 27 * 40),
+            y: ~~( i / 27 ) * 40,
+            fontSize: 26
         }
     }
 
@@ -55,6 +46,7 @@ function buildData(count) {
 }
 
 const Benchmark = () => {
+    let container;
     const [data, setData] = createSignal([]),
     createMany = (amount = 1000) => {
         return clear().then(() => {
@@ -79,7 +71,6 @@ const Benchmark = () => {
             getRenderer().once('idle', () => {
                 resolve({ time: performance.now() - clearPerf });
             });
-
             setData([]);
         });
     },
@@ -100,11 +91,15 @@ const Benchmark = () => {
                 resolve({ time: performance.now() - updatePerf });
             });
 
-            for(let i = 0, d = data(), len = d.length; i < len; i += (skip + 1)) {
-                const row = d[i];
-                row.setLabel(`${pick(adjectives)} ${pick(nouns)}`);
-                row.setColor(pick(colours));
-                row.setTextColor(pick(colours));
+            // If we were to update all the objects this would be slow to reconcile unless we used Index rather than For
+            // instead we'll just update the nodes
+            const d = container.children;
+            for(let i = 0, len = d.length; i < len; i += (skip + 1)) {
+                const node = d[i];
+                const text = node.children[0];
+                text.text = `${pick(adjectives)} ${pick(nouns)}`;
+                node.color = pick(colours);
+                text.color = pick(colours);
             }
         });
     },
@@ -115,17 +110,21 @@ const Benchmark = () => {
                 resolve({ time: performance.now() - swapPerf });
             });
 
-            const d = data().slice();
-            if (d.length > 998) {
-                let tmp = d[1];
-                d[1] = d[998];
-                d[998] = tmp;
+            const a = container.children[998];
+            const b = container.children[1];
+        
+            const temp = a;
+            a.y = b.y;
+            a.x = b.x;
+            a.color = b.color;
+            a.children[0].color = b.children[0].color;
+            a.children[0].text = b.children[0].text;
 
-                // For some reason this doesn't work because solid throws a 
-                // "Node already rendered" Error - so going to manually swap the data
-                setData([]);
-                setData(d);
-            }
+            b.y = temp.y;
+            b.x = temp.x;
+            b.color = temp.color;
+            b.children[0].color = temp.children[0].color;
+            b.children[0].text = temp.children[0].text;
         });
     },
     selectRandom = () => {
@@ -135,16 +134,16 @@ const Benchmark = () => {
                 resolve({ time: performance.now() - selectPerf });
             });
 
-            const d = data();
-            const selected = d[Math.floor(Math.random() * d.length)];
             
-            selected.setX(100);
-            selected.setY(100);
-            selected.setColor(hexColor('red'));
-            selected.setTextColor(hexColor('black'));
-            selected.setW(1200);
-            selected.setH(400);
-            selected.setFontSize(128);
+            const selected = container.children[Math.floor(Math.random() * container.children.length)];
+            const text = selected.children[0];
+            
+            selected.x = 100;
+            selected.y = 100;
+            selected.color = 0xFF0000FF // red;
+            selected.width = 1200;
+            selected.height = 400;
+            text.fontSize = 100;
         });
     },
     removeRow = () => {
@@ -220,27 +219,26 @@ const Benchmark = () => {
     console.log('starting benchmark');
     setTimeout(runBenchmark, 1000);
 
-    return (<View>
-        <For each={ data() }>{ (row, index) => {
-            const x = row.x() || (index() % 27 * 40);
-            const y = row.y() || ~~( index() / 27 ) * 40;
-
-            return <View x={x} y={y} width={row.width()} height={row.height()} color={row.color()}>
-                <Text 
-                    x={5}
-                    y={2}
-                    width={row.width()}
-                    height={row.height()}
-                    alpha={0.8}
-                    fontFamily={"Ubuntu"}
-                    color={row.textColor()}
-                    fontSize={row.fontSize()}>
-                    {row.label()}
-                </Text>
-            </View>
-        }}
-        </For>
-    </View>
+    return (<Show when={data().length > 0}>
+        <View ref={container}>
+            <For each={ data() }>{ (row) => {
+                return <View x={row.x} y={row.y} width={row.width} height={row.height} color={row.color}>
+                    <Text 
+                        x={5}
+                        y={2}
+                        width={row.width}
+                        height={row.height}
+                        alpha={0.8}
+                        fontFamily={"Ubuntu"}
+                        color={row.textColor}
+                        fontSize={row.fontSize}>
+                        {row.label}
+                    </Text>
+                </View>
+            }}
+            </For>
+        </View>
+    </Show>
   );
 };
 
