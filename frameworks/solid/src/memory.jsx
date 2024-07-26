@@ -15,56 +15,33 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import {
-    createSignal,
-    For,
-  } from "solid-js";
-import { View } from "@lightningjs/solid";
+import { For } from "solid-js";
+import { View } from "@lightningtv/solid";
 import { colours } from '../../../shared/data';
-
 import { pick } from "./utils/pick";
 import { getRenderer } from "./utils/renderer";
 
-let idCounter = 1;
 function buildData(count) {
-    let data = new Array(count);
+    let data = [];
     for (let i = 0; i < count; i++) {
-        const [color, setColor] = createSignal(pick(colours));
-        data[i] = {
-            id: idCounter++,
-            color, setColor
-        }
+        data.push({
+            color: pick(colours),
+            x: i % 216 * 4,
+            y: ~~( i / 216 ) * 4
+        })
     }
     return data;
 }
 
 
 const Memory = () => {
-  const [data, setData] = createSignal([]),
-    // [selected, setSelected] = createSignal(null),
-    createMany = (amount = 20000) => {
-        return new Promise((resolve) => {
-            const createPerf = performance.now();
-            getRenderer().once('idle', () => {
-                resolve({ time: performance.now() - createPerf});
-            });
-            setData(buildData(amount))
-        });
-    },
-    clear = () => { 
-        return new Promise((resolve) => {
-            let clearPerf = performance.now();
-            getRenderer().once('idle', () => {
-                resolve({ time: performance.now() - clearPerf });
-            });
-            setData([]);
-        });
-    },
-    start = async () => {
+    console.log('starting memory test');
+    const memoryPerf = performance.now();
+    const data = buildData(20000);
+
+    getRenderer().once('idle', () => {
         const results = {};
-        
-        await clear();
-        const memoryRes = await createMany(20000);
+        const memoryRes = { time: performance.now() - memoryPerf };
         results.create = memoryRes.time.toFixed(2);
 
         Object.keys(results).forEach(key => {
@@ -72,19 +49,13 @@ const Memory = () => {
         });
 
         console.log('Memory!', results);
-    }
+    });
 
-    console.log('starting memory test');
-    start();
-
-    return (<View>
-        <For each={ data() }>{ (row, index) => {
-            const x = index() % 216 * 4
-            const y = ~~( index() / 216 ) * 4
-            return <View x={x} y={y} width={4} height={4} color={row.color()}></View>
+    return (
+        <For each={ data }>{ (row) => {
+            return <View x={/*@once*/ row.x} y={/*@once*/ row.y} width={4} height={4} color={/*@once*/ row.color}></View>
         }}
         </For>
-    </View>
   );
 };
 

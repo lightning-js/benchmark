@@ -14,25 +14,17 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
-// import { render, Text, Config } from "@lightningjs/solid";
-import coreExtensionModuleUrl from "./AppCoreExtensions.js?importChunkUrl";
-
-import {
-  lazy
-} from "solid-js";
+import { lazy } from "solid-js";
 import { HashRouter, Route } from "@solidjs/router";
-import { render, hexColor, Config, View, Text } from "@lightningjs/solid";
-
+import { createRenderer, Config, View } from "@lightningtv/solid";
+import {
+  SdfTrFontFace,
+} from "@lightningjs/renderer";
 import { setRenderer } from "./src/utils/renderer";
 
 Config.debug = false;
-Config.animationsEnabled = true;
-Config.fontSettings.fontFamily = "Ubuntu";
-Config.fontSettings.color = hexColor("#f6f6f6");
-Config.fontSettings.fontSize = 64;
+Config.animationsEnabled = false;
 Config.rendererOptions = {
-    coreExtensionModule: coreExtensionModuleUrl,
     enableInspector: false,
 };
 const Benchmark = lazy(() => import("./src/benchmark"));
@@ -44,11 +36,28 @@ const App = (props) => {
   );
 }
 
-const s = await render(() => (
+const { renderer, render } = createRenderer();
+
+renderer.stage.fontManager.addFontFace(
+  new SdfTrFontFace(
+    'msdf',
+    {
+      fontFamily: 'Ubuntu',
+      descriptors: {
+        weight: 700,
+      },
+      atlasDataUrl: './fonts/Ubuntu-Bold.msdf.json',
+      atlasUrl: './fonts/Ubuntu-Bold.msdf.png',
+      stage: renderer.stage,
+    }
+  )
+);
+
+render(() => (
     <HashRouter root={(props) => <App {...props} />}>
       <Route path="" component={Benchmark} />
       <Route path="memory" component={Memory} />
     </HashRouter>
 ));
 
-setRenderer(s.renderer);
+setRenderer(renderer);
