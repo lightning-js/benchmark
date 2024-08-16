@@ -17,7 +17,13 @@
 
 import os from 'os'
 
-// gets CPU model, CPU cores and memory
+/**
+ * Retrieves system information including CPU model, CPU cores, and memory.
+ * @returns {Object} An object containing the system information.
+ * @property {string} cpuModel - The model of the CPU.
+ * @property {number} cpuCores - The number of CPU cores.
+ * @property {string} memory - The total memory in GB.
+ */
 export const getSystemInfo = () => {
     const cpus = os.cpus();
     const cpuModel = cpus[0].model;
@@ -33,6 +39,13 @@ export const getSystemInfo = () => {
     }
 }
 
+/**
+ * Retrieves operating system information including platform, release, and architecture.
+ * @returns {Object} An object containing the operating system information.
+ * @property {string} platform - The platform of the operating system.
+ * @property {string} release - The release version of the operating system.
+ * @property {string} arch - The architecture of the operating system.
+ */
 export const getOSInfo = () => {
     return {
         platform: os.platform(),

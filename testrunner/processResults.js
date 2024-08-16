@@ -1,23 +1,17 @@
-/*
- * Copyright 2024 Comcast Cable Communications Management, LLC
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
+/**
+ * Processes the benchmark results and calculates various metrics.
+ * 
+ * @typedef {import('./types/results.js').Results} Results
+ * @typedef {import('./types/memoryResults.js').MemoryResults} MemoryResults
+ * @typedef {import('./types/fileSizeResults.js').FileSizeResults} FileSizeResultsObject
+ * 
+ * @param {Results} results - The benchmark results object.
+ * @param {MemoryResults} memoryResults - The memory results object.
+ * @param {FileSizeResultsObject} fileSizeResults - The file size results object.
+ * @returns {Object} - The processed and sorted results object.
  */
-
 export const processResults = (results, memoryResults, fileSizeResults) => {
     const processedResults = {};
-
     const fastestTimes = {
         create: null,
         update: null,
@@ -110,10 +104,21 @@ export const processResults = (results, memoryResults, fileSizeResults) => {
     return sortedResults;
 }
 
+/**
+ * Calculates the mean value relative to a baseline value.
+ * @param {number} value - The value to calculate the mean for.
+ * @param {number} baseline - The baseline value to compare against.
+ * @returns {string} - The calculated mean value.
+ */
 const calculateMean = (value, baseline) => {
     return (value / baseline).toFixed(2);
 }
 
+/**
+ * Calculates the average mean value from an array of values.
+ * @param {number[]} values - The array of values to calculate the average mean for.
+ * @returns {string} - The calculated average mean value.
+ */
 const avgMean = (values) => {
     return (values.reduce((a, b) => a + b) / values.length).toFixed(2);
 }

@@ -18,7 +18,12 @@
 import fs from 'fs';
 import path from 'path';
 
-// gets the total size of all javascript files in a directory
+/**
+ * Calculates the total size of all JavaScript files in a directory.
+ * 
+ * @param {string} baseDirectory - The base directory path.
+ * @returns {number} The total size of all JavaScript files in bytes.
+ */
 export const getJavaScriptBundleSize = (baseDirectory) => {
     let totalSize = 0;
     const directory = path.join(baseDirectory, 'assets');
