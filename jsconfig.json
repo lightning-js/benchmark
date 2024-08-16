@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "checkJs": true,
+        "target": "esnext",
+        "module": "Node16",
+        "moduleResolution": "node16"
+    },
+    "exclude": [
+        "node_modules",
+        "**/node_modules/*"
+    ]
+}
