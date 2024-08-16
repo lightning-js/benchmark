@@ -19,6 +19,7 @@
   },
   "devDependencies": {
     "dotenv": "^16.4.5",
+    "shelljs": "^0.8.5",
     "@types/node": "^20.14.11",
     "jsdoc": "^4.0.3"
   }
