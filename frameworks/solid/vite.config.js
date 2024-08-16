@@ -1,6 +1,5 @@
 import { defineConfig } from "vite";
 import solidPlugin from "vite-plugin-solid";
-import { importChunkUrl } from "@lightningjs/vite-plugin-import-chunk-url";
 import { viteStaticCopy } from "vite-plugin-static-copy";
 import path from "path";
 
@@ -9,10 +8,9 @@ const target = "esnext";
 export default defineConfig({
   base: "./",
   plugins: [
-    importChunkUrl(),
     solidPlugin({
       solid: {
-        moduleName: "@lightningjs/solid",
+        moduleName: "@lightningtv/solid",
         generate: "universal",
       },
     }),
@@ -31,17 +29,16 @@ export default defineConfig({
   build: {
     target: target,
     minify: true,
-    sourcemap: false,
+    sourcemap: true,
     outDir: path.resolve(__dirname, 'dist'),
   },
   resolve: {
-    dedupe: ["solid-js", "@lightningjs/solid", "@lightningjs/renderer"],
+    dedupe: ["solid-js", "@lightningtv/solid", "@lightningjs/renderer"],
   },
   optimizeDeps: {
     include: [],
     exclude: [
-      "@lightningjs/solid",
-      "@lightningjs/solid-primitives",
+      "@lightningtv/solid",
       "@lightningjs/renderer/core",
       "@lightningjs/renderer/workers/renderer",
     ],
