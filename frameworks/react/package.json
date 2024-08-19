@@ -1,0 +1,23 @@
+{
+  "name": "react",
+  "version": "0.0.1",
+  "description": "React Benchmark",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite --host",
+    "dist": "vite build --mode production"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "vite": "^5.4.1",
+    "vite-plugin-static-copy": "^0.17.1"
+  },
+  "dependencies": {
+    "@plex/react-lightning": "file:../../../react-lightning/packages/react-lightning",
+    "@plex/react-lightning-plugin-inspector": "file:../../../react-lightning/packages/plugin-inspector",
+    "react": "^18.3.1",
+    "react-router-dom": "^6.26.1"
+  }
+}
