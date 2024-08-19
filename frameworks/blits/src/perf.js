@@ -129,6 +129,7 @@ const updateMany = function (skip = 0) {
       this.items[i].textColor = pick(colourNames)
       this.items[i].text = `${pick(adjectives)} ${pick(nouns)}`
     }
+    this.trigger('items')
   })
 }
 
@@ -143,6 +144,7 @@ const updateRandom = function () {
     this.items[randomIdx].x = 100
     this.items[randomIdx].y = 100
     this.items[randomIdx].fontSize = 100
+    this.trigger('items')
   })
 }
 
