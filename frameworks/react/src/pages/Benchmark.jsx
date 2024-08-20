@@ -1,5 +1,4 @@
-import { LightningViewElement, LightningTextElement } from '@plex/react-lightning';
-import { useState } from 'react';
+import { Component } from 'react';
 
 import { colours, adjectives, nouns } from '../../../../shared/data';
 import { warmup } from "../../../../shared/utils/warmup";
@@ -25,251 +24,238 @@ function buildData(count) {
     return data;
 }
 
-let benchmarkStarted = false;
+export class Benchmark extends Component {
+    constructor() {
+        super();
 
-export const Benchmark = () => {
-  let container;
-  const [data, setData] = useState([]);
-  const createMany = (amount = 1000) => {
-      return clear().then(() => {
-          return new Promise((resolve) => {
-              const createPerf = performance.now();
-              getRenderer().once('idle', () => {
-                  resolve({ time: performance.now() - createPerf});
-              });
+        this.state = {
+            data: []
+        }
 
-              setData(buildData(amount))
-          });
-      });
+        setTimeout(() => {
+            this.runBenchmark();
+        }, 1000);
+    }
+
+    createMany = (amount = 1000) => {
+        return this.clear().then(() => {
+            return new Promise((resolve) => {
+                const createPerf = performance.now();
+                getRenderer().once('idle', () => {
+                    resolve({ time: performance.now() - createPerf});
+                });
+
+                // setData(buildData(amount))
+                this.setState({ data: buildData(amount) });
+            });
+        });
   }
 
-  const clear = () => { 
+  clear = () => { 
       return new Promise((resolve) => {
-          if (data.length === 0) {
-              resolve({ time: 0 });
-              return;
-          }
+            const data = this.state.data;
+            if (data.length === 0) {
+                resolve({ time: 0 });
+                return;
+            }
 
-          const clearPerf = performance.now();
-          getRenderer().once('idle', () => {
-              resolve({ time: performance.now() - clearPerf });
-          });
-          setData([]);
+            const clearPerf = performance.now();
+            getRenderer().once('idle', () => {
+                resolve({ time: performance.now() - clearPerf });
+            });
+            
+            this.setState({ data : [] });
       });
   }
   
-  const appendMany = (amount = 1000) => {
+  appendMany = (amount = 1000) => {
       return new Promise((resolve) => {
           const appendPerf = performance.now();
           getRenderer().once('idle', () => {
               resolve({ time: performance.now() - appendPerf });
           });
 
-          setData([...data, ...buildData(amount)]);
+          this.setState({ data: [...this.state.data, ...buildData(amount)] });
       });
   }
 
-  const updateMany = (count = 1000, skip = 0) => {
-      return new Promise((resolve) => {
-          const updatePerf = performance.now();
+  updateMany = (count = 1000, skip = 0) => {
+        return new Promise((resolve) => {
+            const updatePerf = performance.now();
 
-          const newData = data.slice();
-          for(let i = 0, len = newData.length; i < len; i += (skip + 1)) {
-              const node = newData[i];
-              const text = node.children[0];
-              text.text = `${pick(adjectives)} ${pick(nouns)}`;
-              node.color = pick(colours);
-              text.color = pick(colours);
-          }
+            const data = this.state.data;
+            for(let i = 0, len = data.length; i < len; i += (skip + 1)) {
+                const node = data[i];
+                node.label = `${pick(adjectives)} ${pick(nouns)}`;
+                node.color = pick(colours);
+                node.textColor = pick(colours);
+            }
 
-          getRenderer().once('idle', () => {
-            resolve({ time: performance.now() - updatePerf });
-          });
+            getRenderer().once('idle', () => {
+                resolve({ time: performance.now() - updatePerf });
+            });
 
-          console.log('setting data', newData.length);
-          setData(newData);
+            this.setState({ data });
       });
   }
   
-  const swapRows = () => {
+  swapRows = () => {
       return new Promise((resolve) => {
-          const swapPerf = performance.now();
-          getRenderer().once('idle', () => {
-              resolve({ time: performance.now() - swapPerf });
-          });
+            const swapPerf = performance.now();
+            
+            const data = this.state.data;
+            const a = data[998];
+            const b = data[1];
 
-          const a = data[998];
-          const b = data[1];
-      
-          const temp = a;
-          a.y = b.y;
-          a.x = b.x;
-          a.color = b.color;
-          a.children[0].color = b.children[0].color;
-          a.children[0].text = b.children[0].text;
+            const temp = a;
+            a.y = b.y;
+            a.x = b.x;
+            a.color = b.color;
+            a.textColor = b.textColor;
+            a.text = b.text;
 
-          b.y = temp.y;
-          b.x = temp.x;
-          b.color = temp.color;
-          b.children[0].color = temp.children[0].color;
-          b.children[0].text = temp.children[0].text;
+            b.y = temp.y;
+            b.x = temp.x;
+            b.color = temp.color;
+            b.textColor = temp.textColor;
+            b.text = temp.text;
 
-          data[998] = b;
-          data[1] = a;
+            data[998] = b;
+            data[1] = a;
+
+            getRenderer().once('idle', () => {
+                resolve({ time: performance.now() - swapPerf });
+            });
+
+            this.setState({ data });
       });
   }
-  const selectRandom = () => {
-      return new Promise((resolve) => {
-          const selectPerf = performance.now();
-          getRenderer().once('idle', () => {
-              resolve({ time: performance.now() - selectPerf });
-          });
 
-          const selected = data[Math.floor(Math.random() * container.children.length)];
-          const text = selected.children[0];
-          
-          selected.x = 100;
-          selected.y = 100;
-          selected.color = 0xFF0000FF // red;
-          selected.width = 1200;
-          selected.height = 400;
-          text.fontSize = 100;
+    selectRandom = () => {
+        return new Promise((resolve) => {
+            const selectPerf = performance.now();
+            getRenderer().once('idle', () => {
+                resolve({ time: performance.now() - selectPerf });
+            });
 
-          setData(data);
+            const selected = this.state.data[Math.floor(Math.random() * this.state.data.length)];
+            selected.x = 100;
+            selected.y = 100;
+            selected.color = 0xFF0000FF // red;
+            selected.width = 1200;
+            selected.height = 400;
+            selected.fontSize = 100;
+
+            this.setState({ data: this.state.data });
       });
   }
-  const removeRow = () => {
+
+  removeRow = () => {
       return new Promise((resolve) => {
           const removePerf = performance.now();
           getRenderer().once('idle', () => {
               resolve({ time: performance.now() - removePerf });
           });
 
-          const d = data.slice();
-          d.pop();
-          setData(d);
+          this.state.data.pop();
+          this.setState({ data: this.state.data });
       });
   }
 
-  const runBenchmark = async () => {
-      const results = {};
+    runBenchmark = async () => {
+        console.log('running benchmark');
 
-      // await warmup(createMany, 1000, 5)
-      // const createRes = await createMany(1000)
-      // results.create = createRes.time.toFixed(2);
+        const { createMany, clear, updateMany, appendMany, swapRows, selectRandom, removeRow } = this;
 
-      // await createMany(1000);
-      // await warmup(updateMany, 1000, 5);
-      await createMany(1000);
-      const updateRes = await updateMany(1000, 0);
-      results.update = updateRes.time.toFixed(2);
+        const results = {};
 
-      // await createMany(1000);
-      // await warmup(updateMany, [1000, 10], 5);
-      // await createMany(1000);
-      // const skipNthRes = await updateMany(1000, 10);
-      // results.skipNth = skipNthRes.time.toFixed(2);
+        await warmup(createMany, 1000, 5)
+        const createRes = await createMany(1000)
+        results.create = createRes.time.toFixed(2);
 
-      // await createMany(1000);
-      // await warmup(selectRandom, undefined, 5);
-      // await createMany(1000);
-      // const selectRes = await selectRandom();
-      // results.select = selectRes.time.toFixed(2);
+        await createMany(1000);
+        await warmup(updateMany, 1000, 5);
+        await createMany(1000);
+        const updateRes = await updateMany(1000, 0);
+        results.update = updateRes.time.toFixed(2);
 
-      // await createMany(1000);
-      // await warmup(swapRows, undefined, 5);
-      // await createMany(1000);
-      // const swapRes = await swapRows();
-      // results.swap = swapRes.time.toFixed(2);
+        await createMany(1000);
+        await warmup(updateMany, [1000, 10], 5);
+        await createMany(1000);
+        const skipNthRes = await updateMany(1000, 10);
+        results.skipNth = skipNthRes.time.toFixed(2);
 
-      // await createMany(1000);
-      // await warmup(removeRow, undefined, 5);
-      // await createMany(1000);
-      // const removeRes = await removeRow();
-      // results.remove = removeRes.time.toFixed(2);
+        await createMany(1000);
+        await warmup(selectRandom, undefined, 5);
+        await createMany(1000);
+        const selectRes = await selectRandom();
+        results.select = selectRes.time.toFixed(2);
 
-      // await warmup(createMany, 10000, 5);
-      // const createResLots = await createMany(10000)
-      // results.createLots = createResLots.time.toFixed(2);
+        // await createMany(1000);
+        // FIXME cant run warmups - it gets stuck
+        // await warmup(swapRows, undefined, 5);
+        await createMany(1000);
+        const swapRes = await swapRows();
+        results.swap = swapRes.time.toFixed(2);
 
-      // await clear();
-      // await warmup(appendMany, 1000, 5);
-      // await createMany(1000);
-      // const appendRes = await appendMany(1000);
-      // results.append = appendRes.time.toFixed(2);
+        await createMany(1000);
+        await warmup(removeRow, undefined, 5);
+        await createMany(1000);
+        const removeRes = await removeRow();
+        results.remove = removeRes.time.toFixed(2);
 
-      // await warmup(createMany, 1000, 5);
-      // const clearRes = await clear();
-      // results.clear = clearRes.time.toFixed(2);
+        await warmup(createMany, 10000, 5);
+        const createResLots = await createMany(10000)
+        results.createLots = createResLots.time.toFixed(2);
 
-      Object.keys(results).forEach(key => {
-          console.log(`${key}: ${results[key]}ms`);
-      });
+        await clear();
+        await warmup(appendMany, 1000, 5);
+        await createMany(1000);
+        const appendRes = await appendMany(1000);
+        results.append = appendRes.time.toFixed(2);
 
-      console.log('Done!', results);
-  }
+        await warmup(createMany, 1000, 5);
+        const clearRes = await clear();
+        results.clear = clearRes.time.toFixed(2);
 
-  if (!benchmarkStarted) {
-    benchmarkStarted = true;
-    console.log('starting benchmark');
-    setTimeout(runBenchmark, 1000);
-  }
+        Object.keys(results).forEach(key => {
+            console.log(`${key}: ${results[key]}ms`);
+        });
 
-  // return (<Show when={data().length > 0}>
-  //     <View ref={container}>
-  //         <For each={ data() }>{ (row) => {
-  //             return <View x={row.x} y={row.y} width={row.width} height={row.height} color={row.color}>
-  //                 <Text 
-  //                     x={5}
-  //                     y={2}
-  //                     width={row.width}
-  //                     height={row.height}
-  //                     alpha={0.8}
-  //                     fontFamily={"Ubuntu"}
-  //                     color={row.textColor}
-  //                     fontSize={row.fontSize}>
-  //                     {row.label}
-  //                 </Text>
-  //             </View>
-  //         }}
-  //         </For>
-  //     </View>
-  // </Show>
-  // );
-  
-  // if (data.length === 0) {
-  //   return null;
-  // }
+        console.log('Done!', results);
+    }
 
-  console.log(data.length);
+    
 
-  return (
-    <lng-view ref={container}>
-      {data.map((row, index) => (
-        <lng-view 
-          key={index}
-          x={row.x} 
-          y={row.y} 
-          width={row.width} 
-          height={row.height} 
-          color={row.color}>
-          
-          <lng-text
-            x={5}
-            y={2}
-            width={row.width}
-            height={row.height}
-            alpha={0.8}
-            fontFamily={"Ubuntu"}
-            color={row.textColor}
-            fontSize={row.fontSize}
-          >
-            {row.label}
-          </lng-text>
+    render() {
+        return (
+        <lng-view>
+        {this.state.data.map((row, index) => (
+            <lng-view 
+            key={index}
+            x={row.x} 
+            y={row.y} 
+            width={row.width} 
+            height={row.height} 
+            color={row.color}>
+            
+            <lng-text
+                x={5}
+                y={2}
+                width={row.width}
+                height={row.height}
+                alpha={0.8}
+                fontFamily={"Ubuntu"}
+                color={row.textColor}
+                fontSize={row.fontSize}
+            >
+                {row.label}
+            </lng-text>
+            </lng-view>
+        ))}
         </lng-view>
-      ))}
-    </lng-view>
-  )
+        );
+    }
 };
 
 export default Benchmark;

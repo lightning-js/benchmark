@@ -21,20 +21,20 @@ import {
   createRoot as createRootLng,
 } from '@plex/react-lightning';
 import { keyMap } from './src/keyMap';
-import { RouterProvider, createBrowserRouter } from 'react-router-dom';
-import inspector from '@plex/react-lightning-plugin-inspector';
+import { RouterProvider, createHashRouter } from 'react-router-dom';
 import { Benchmark } from './src/pages/Benchmark';
+import { Memory } from './src/pages/Memory';
 import { setRenderer } from './src/utils/renderer';
 
-const router = createBrowserRouter([
+const router = createHashRouter([
   {
     path: '/',
     element: <Benchmark />,
   },
-  // {
-  //   path: '/memory',
-  //   element: <LayoutPage />,
-  // },
+  {
+    path: 'memory',
+    element: <Memory />,
+  },
 ]);
 
 const options = {
@@ -44,12 +44,12 @@ const options = {
       descriptors: {
         weight: 700,
       },
-      atlasUrl: '/fonts/Ubuntu-Bold.msdf.png',
-      atlasDataUrl: '/fonts/Ubuntu-Bold.msdf.json',
+      atlasUrl: './fonts/Ubuntu-Bold.msdf.png',
+      atlasDataUrl: './fonts/Ubuntu-Bold.msdf.json',
       stage,
     })
   ],
-  plugins: [inspector({ borders: false })],
+  plugins: [],
 };
 
 const App = () => (
