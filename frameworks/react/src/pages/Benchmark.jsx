@@ -75,7 +75,7 @@ export class Benchmark extends Component {
               resolve({ time: performance.now() - appendPerf });
           });
 
-          this.setState({ data: [...this.state.data, ...buildData(amount)] });
+          this.setState({ data: this.state.data.concat(buildData(amount)) });
       });
   }
 
@@ -103,31 +103,18 @@ export class Benchmark extends Component {
       return new Promise((resolve) => {
             const swapPerf = performance.now();
             
-            const data = this.state.data;
-            const a = data[998];
-            const b = data[1];
+            const newdata = [...this.state.data];
+            const d1 = newdata[1];
+            const d998 = newdata[998];
 
-            const temp = a;
-            a.y = b.y;
-            a.x = b.x;
-            a.color = b.color;
-            a.textColor = b.textColor;
-            a.text = b.text;
-
-            b.y = temp.y;
-            b.x = temp.x;
-            b.color = temp.color;
-            b.textColor = temp.textColor;
-            b.text = temp.text;
-
-            data[998] = b;
-            data[1] = a;
+            newdata[1] = d998;
+            newdata[998] = d1;
 
             getRenderer().once('idle', () => {
                 resolve({ time: performance.now() - swapPerf });
             });
 
-            this.setState({ data });
+            this.setState({ data: newdata });
       });
   }
 
@@ -191,9 +178,8 @@ export class Benchmark extends Component {
         const selectRes = await selectRandom();
         results.select = selectRes.time.toFixed(2);
 
-        // await createMany(1000);
-        // FIXME cant run warmups - it gets stuck
-        // await warmup(swapRows, undefined, 5);
+        await createMany(1000);
+        await warmup(swapRows, undefined, 5);
         await createMany(1000);
         const swapRes = await swapRows();
         results.swap = swapRes.time.toFixed(2);
