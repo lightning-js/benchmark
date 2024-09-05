@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'official_results/**'
+  workflow_dispatch:
 
 permissions:
   contents: read
