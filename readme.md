@@ -3,6 +3,8 @@
 Allows the user to test various configurations with the Lightning JS project.
 Similar to https://github.com/krausest/js-framework-benchmark the Lightning JS benchmark will execute a series of operations to measure the throughput of the framework.
 
+For the official results please see https://lightning-js.github.io/benchmark/
+
 ## Operations
 
 The following operations will be executed:
