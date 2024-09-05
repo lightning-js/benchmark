@@ -22,10 +22,22 @@
  */
 
 import fs from "fs";
+import shell from 'shelljs';
 import { runBenchmark, getBrowserVersion } from "./testrunner/runBenchmark.js";
 import { processResults } from "./testrunner/processResults.js";
 import { writeResults } from "./testrunner/writeResults.js";
 import { getJavaScriptBundleSize } from "./testrunner/totalBundlefileSize.js";
+
+
+/**
+ * Check for --results or -r argument
+ */
+const args = process.argv.slice(2);
+let writeOfficialResultsFlag = false;
+
+if (args.includes('--results') || args.includes('-r')) {
+    writeOfficialResultsFlag = true;
+}
 
 /**
  * Checks if the './dist' directory exists.
@@ -131,6 +143,25 @@ const browserVersion = await getBrowserVersion();
 console.log('Browser version:', browserVersion);
 
 /**
+ * Initializes the results object.
+ * @typedef {import('./testrunner/types/results.js').Result} Result
+ * @returns {Result} The results object.
+ */
+const createNewResult = () => {
+    return {
+        create: null,
+        update: null,
+        skipNth: null,
+        select: null,
+        swap: null,
+        remove: null,
+        createLots: null,
+        append: null,
+        clear: null
+    }
+}
+
+/**
  * Runs the benchmark for a specific framework.
  * @param {string} dir - The directory of the framework.
  */
@@ -175,27 +206,60 @@ const run = async (dir) => {
         console.log(processedResults);
 
         console.log('Writing results...');
-        writeResults(processedResults, frameworkVersions, browserVersion);
+        const filename = await writeResults(processedResults, frameworkVersions, browserVersion);
+
+        if (writeOfficialResultsFlag) {
+            writeOfficialResults(filename);
+        }
     }
 }
 
 /**
- * Initializes the results object.
- * @typedef {import('./testrunner/types/results.js').Result} Result
- * @returns {Result} The results object.
+ * Writes the results to a file.
+ * @param {string} filename - The processed benchmark results.
+ *
+ * @returns {void}
  */
-const createNewResult = () => {
-    return {
-        create: null,
-        update: null,
-        skipNth: null,
-        select: null,
-        swap: null,
-        remove: null,
-        createLots: null,
-        append: null,
-        clear: null
+const writeOfficialResults = (filename) => {
+    console.log('Writing official results...');
+    const sourceFile = `./results/${filename}`;
+
+    // Ensure the official_results directory exists
+    if (!fs.existsSync('./official_results')) {
+        fs.mkdirSync('./official_results');
     }
+
+    // Generate a filename with the current date in YYYYMMDD format
+    const currentDate = new Date();
+    const formattedDate = currentDate.toISOString().slice(0, 10).replace(/-/g, '');
+    const cleanedFilename = filename.replace('_results_', '_');
+    const newFilename = `${formattedDate}_${cleanedFilename}`;
+
+    // Copy the file to the new location with the new filename
+    shell.cp(sourceFile, `./official_results/${newFilename}`);
+    console.log(`Official results written to: ./official_results/${newFilename}`);
+
+    // Update the filename variable for use in the results.json file
+    filename = newFilename;
+
+    // Load or create the results.json file
+    let resultsJson = {};
+    const resultsJsonPath = './official_results/results.json';
+    
+    if (fs.existsSync(resultsJsonPath)) {
+        const fileContent = fs.readFileSync(resultsJsonPath, 'utf8');
+        resultsJson = JSON.parse(fileContent);
+    }
+
+    // Add the new result to the JSON object
+    const blitsVersion = 'Blits ' + frameworkVersions['blits'] || '';
+    const rendererVersion = 'Renderer ' + frameworkVersions['renderer'] || '';
+    const version = `${formattedDate} ${blitsVersion} ${rendererVersion} ${browserVersion}`;
+    resultsJson[version] = filename;
+
+    // Write the updated JSON back to the file
+    fs.writeFileSync(resultsJsonPath, JSON.stringify(resultsJson, null, 2));
 }
+
 
 run(dirs[0]);

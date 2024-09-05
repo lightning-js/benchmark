@@ -214,84 +214,86 @@ const createFile = (filename) => {
  * @param {Object} results - The benchmark results.
  * @param {Object} frameworkVersions - The versions of the frameworks used in the benchmark.
  * @param {string} browserVersion - The version of the browser used for the benchmark.
+ * 
+ * @return {Promise<string>} Filename Returns the filename of the results file
  */
 export const writeResults = (results, frameworkVersions, browserVersion) => {
-    const osVersion = getOSInfo();
-    const systemVersion = getSystemInfo();
+    return new Promise((resolve, reject) => {
 
-    const filename = `results_${browserVersion}_${osVersion.platform}_${osVersion.release}_${osVersion.arch}.html`;
-    const fileStream = createFile(filename);
+        const osVersion = getOSInfo();
+        const systemVersion = getSystemInfo();
 
-    fileStream.on('error', function(err) {
-        console.error("Error writing to file:", err);
-    });
+        const filename = `results_${browserVersion}_${osVersion.platform}_${osVersion.release}_${osVersion.arch}.html`;
+        const fileStream = createFile(filename);
 
-    // write the index header
-    fileStream.write(indexHeader);
+        fileStream.on('error', function(err) {
+            console.error("Error writing to file:", err);
+        });
 
-    // write the header
-    fileStream.write(header
-        .replace('{{OSversion}}', `${osVersion.platform} ${osVersion.release} ${osVersion.arch}`)
-        .replace('{{systemVersion}}', `${systemVersion.cpuModel} ${systemVersion.cpuCores} and ${systemVersion.memory} GB memory`)
-        .replace('{{browserVersion}}', browserVersion)
-    );
+        // write the index header
+        fileStream.write(indexHeader);
 
-    // write the results header
-    fileStream.write(resultsHeader);
+        // write the header
+        fileStream.write(header
+            .replace('{{OSversion}}', `${osVersion.platform} ${osVersion.release} ${osVersion.arch}`)
+            .replace('{{systemVersion}}', `${systemVersion.cpuModel} ${systemVersion.cpuCores} and ${systemVersion.memory} GB memory`)
+            .replace('{{browserVersion}}', browserVersion)
+        );
 
-    const frameworks = Object.keys(results);
-    const frameworkNamesAndVersions = frameworks.map(f => `${f} ${frameworkVersions[f]}`);
+        // write the results header
+        fileStream.write(resultsHeader);
 
-    // write some html
-    const frameworksHeader = frameworkNamesAndVersions.map(f => `<th>${f}</th>`).join('');
-    const createRows = frameworks.map(f => `<td>${results[f].create.time} (${results[f].create.mean})</td>`).join('');
-    const updateRows = frameworks.map(f => `<td>${results[f].update.time} (${results[f].update.mean})</td>`).join('');
-    const partialUpdateRows = frameworks.map(f => `<td>${results[f].skipNth.time} (${results[f].skipNth.mean})</td>`).join('');
-    const selectRow = frameworks.map(f => `<td>${results[f].select.time} (${results[f].select.mean})</td>`).join('');
-    const swapRows = frameworks.map(f => `<td>${results[f].swap.time} (${results[f].swap.mean})</td>`).join('');
-    const removeRow = frameworks.map(f => `<td>${results[f].remove.time} (${results[f].remove.mean})</td>`).join('');
-    const createManyRows = frameworks.map(f => `<td>${results[f].createLots.time} (${results[f].createLots.mean})</td>`).join('');
-    const appendRows = frameworks.map(f => `<td>${results[f].append.time} (${results[f].append.mean})</td>`).join('');
-    const clearRows = frameworks.map(f => `<td>${results[f].clear.time} (${results[f].clear.mean})</td>`).join('');
-    const overall = frameworks.map(f => `<td>${results[f].avgMean}</td>`).join('');
-    const rowsSize = frameworks.map(f => `<td>${results[f].fileSize} KB</td>`).join('');
-    const rowsMemory = frameworks.map(f => {
-        if (results[f].memory && (results[f].memory.memory !== 'NaN' || results[f].memory.time !== -1)) {
-            return `<td>${results[f].memory.memory}MB (created in ${results[f].memory.time}ms)</td>`
-        } else {
-            return `<td>Failed</td>`;
-        }
-    }).join('');
+        const frameworks = Object.keys(results);
+        const frameworkNamesAndVersions = frameworks.map(f => `${f} ${frameworkVersions[f]}`);
 
-    fileStream.write(table
-        .replace('{{frameworks}}', frameworksHeader)
-        .replace('{{createRows}}', createRows)
-        .replace('{{updateRows}}', updateRows)
-        .replace('{{partialUpdateRows}}', partialUpdateRows)
-        .replace('{{selectRow}}', selectRow)
-        .replace('{{swapRows}}', swapRows)
-        .replace('{{removeRow}}', removeRow)
-        .replace('{{createManyRows}}', createManyRows)
-        .replace('{{appendRows}}', appendRows)
-        .replace('{{clearRows}}', clearRows)
-        .replace('{{overall}}', overall)
-        .replace('{{frameworks}}', frameworksHeader)
-        .replace('{{rowsMemory}}', rowsMemory)
-        .replace('{{frameworks}}', frameworksHeader)
-        .replace('{{rowsSize}}', rowsSize)
-    );
-    
-    // write the footer
-    fileStream.write(indexFooter);
+        // write some html
+        const frameworksHeader = frameworkNamesAndVersions.map(f => `<th>${f}</th>`).join('');
+        const createRows = frameworks.map(f => `<td>${results[f].create.time} (${results[f].create.mean})</td>`).join('');
+        const updateRows = frameworks.map(f => `<td>${results[f].update.time} (${results[f].update.mean})</td>`).join('');
+        const partialUpdateRows = frameworks.map(f => `<td>${results[f].skipNth.time} (${results[f].skipNth.mean})</td>`).join('');
+        const selectRow = frameworks.map(f => `<td>${results[f].select.time} (${results[f].select.mean})</td>`).join('');
+        const swapRows = frameworks.map(f => `<td>${results[f].swap.time} (${results[f].swap.mean})</td>`).join('');
+        const removeRow = frameworks.map(f => `<td>${results[f].remove.time} (${results[f].remove.mean})</td>`).join('');
+        const createManyRows = frameworks.map(f => `<td>${results[f].createLots.time} (${results[f].createLots.mean})</td>`).join('');
+        const appendRows = frameworks.map(f => `<td>${results[f].append.time} (${results[f].append.mean})</td>`).join('');
+        const clearRows = frameworks.map(f => `<td>${results[f].clear.time} (${results[f].clear.mean})</td>`).join('');
+        const overall = frameworks.map(f => `<td>${results[f].avgMean}</td>`).join('');
+        const rowsSize = frameworks.map(f => `<td>${results[f].fileSize} KB</td>`).join('');
+        const rowsMemory = frameworks.map(f => {
+            if (results[f].memory && (results[f].memory.memory !== 'NaN' || results[f].memory.time !== -1)) {
+                return `<td>${results[f].memory.memory}MB (created in ${results[f].memory.time}ms)</td>`
+            } else {
+                return `<td>Failed</td>`;
+            }
+        }).join('');
 
-    // close the file
-    fileStream.end();
-    console.log(`Results written to ${filename}`);
+        fileStream.write(table
+            .replace('{{frameworks}}', frameworksHeader)
+            .replace('{{createRows}}', createRows)
+            .replace('{{updateRows}}', updateRows)
+            .replace('{{partialUpdateRows}}', partialUpdateRows)
+            .replace('{{selectRow}}', selectRow)
+            .replace('{{swapRows}}', swapRows)
+            .replace('{{removeRow}}', removeRow)
+            .replace('{{createManyRows}}', createManyRows)
+            .replace('{{appendRows}}', appendRows)
+            .replace('{{clearRows}}', clearRows)
+            .replace('{{overall}}', overall)
+            .replace('{{frameworks}}', frameworksHeader)
+            .replace('{{rowsMemory}}', rowsMemory)
+            .replace('{{frameworks}}', frameworksHeader)
+            .replace('{{rowsSize}}', rowsSize)
+        );
+        
+        // write the footer
+        fileStream.write(indexFooter);
 
-    fileStream.on('finish', function() {
-        // exit out
-        process.exit(0);
-    });
-    
+        // close the file
+        fileStream.end();
+        console.log(`Results written to ${filename}`);
 
+        fileStream.on('finish', function() {
+            resolve(filename);
+        });
+    }); 
 }

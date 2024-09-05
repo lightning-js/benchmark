@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Framework Test Results</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+        a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>Official Lightning Framework Test Results</h1>
+    <p>This is the official results page for the <a href="https://github.com/lightning-js/benchmark">Lightning framework benchmark</a>.<br>
+    Comparisons are done using 20x slowdown using Google Chrome in Playwright.</p>
+    <ul style="margin-left: 40px;" id="resultsList"></ul>
+
+    <script>
+        fetch('results.json')
+            .then(response => response.json())
+            .then(data => {
+                const resultsList = document.getElementById('resultsList');
+
+                // Reverse the order of entries in the data object
+                const reversedData = Object.entries(data)
+                    .reverse()
+                    .reduce((acc, [key, value]) => {
+                        acc[key] = value;
+                        return acc;
+                    }, {});
+
+                // Use the reversed data for creating list items
+                for (const [version, file] of Object.entries(reversedData)) {
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.href = file;
+                    a.textContent = version;
+                    li.appendChild(a);
+                    resultsList.appendChild(li);
+                }
+
+            })
+            .catch(error => {
+                console.error('Error fetching results:', error);
+                const resultsList = document.getElementById('resultsList');
+                resultsList.innerHTML = '<li>Error loading results. Please try again later.</li>';
+            });
+    </script>
+</body>
+</html>
