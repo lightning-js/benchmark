@@ -52,10 +52,7 @@ const Memory = () => {
     });
 
     return (
-        <For each={ data }>{ (row) => {
-            return <View x={/*@once*/ row.x} y={/*@once*/ row.y} width={4} height={4} color={/*@once*/ row.color}></View>
-        }}
-        </For>
+        data.map((row) => <node x={/*@once*/ row.x} y={/*@once*/ row.y} width={4} height={4} color={/*@once*/ row.color}></node>)
   );
 };
 

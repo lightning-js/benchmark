@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "main": "index.js",
   "scripts": {
+    "start": "vite --host --open",
     "dev": "vite --host",
     "build": "vite build",
     "preview": "vite preview --open --port 8080",

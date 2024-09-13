@@ -47,7 +47,7 @@ function buildData(count) {
 
 const Benchmark = () => {
     let container;
-    const [data, setData] = createSignal([]),
+    const [data, setData] = createSignal(),
     createMany = (amount = 1000) => {
         return clear().then(() => {
             return new Promise((resolve) => {
@@ -62,7 +62,7 @@ const Benchmark = () => {
     },
     clear = () => { 
         return new Promise((resolve) => {
-            if (data().length === 0) {
+            if (!data()) {
                 resolve({ time: 0 });
                 return;
             }
@@ -71,7 +71,7 @@ const Benchmark = () => {
             getRenderer().once('idle', () => {
                 resolve({ time: performance.now() - clearPerf });
             });
-            setData([]);
+            setData();
         });
     },
     appendMany = (amount = 1000) => {
@@ -81,7 +81,7 @@ const Benchmark = () => {
                 resolve({ time: performance.now() - appendPerf });
             });
 
-            setData([...data(), ...buildData(amount)]);
+            setData([...(data() || []), ...buildData(amount)]);
         });
     },
     updateMany = (count = 1000, skip = 0) => {
@@ -97,9 +97,9 @@ const Benchmark = () => {
             for(let i = 0, len = d.length; i < len; i += (skip + 1)) {
                 const node = d[i];
                 const text = node.children[0];
-                text.text = `${pick(adjectives)} ${pick(nouns)}`;
                 node.color = pick(colours);
                 text.color = pick(colours);
+                text.text = `${pick(adjectives)} ${pick(nouns)}`;
             }
         });
     },
@@ -164,7 +164,7 @@ const Benchmark = () => {
         await warmup(createMany, 1000, 5)
         const createRes = await createMany(1000)
         results.create = createRes.time.toFixed(2);
-
+        
         await createMany(1000);
         await warmup(updateMany, 1000, 5)
         await createMany(1000);
@@ -172,7 +172,7 @@ const Benchmark = () => {
         results.update = updateRes.time.toFixed(2);
 
         await createMany(1000);
-        await warmup(updateMany, [1000, 10], 5);
+        await warmup(updateMany, 1000, 10);
         await createMany(1000);
         const skipNthRes = await updateMany(1000, 10);
         results.skipNth = skipNthRes.time.toFixed(2);
@@ -219,22 +219,22 @@ const Benchmark = () => {
     console.log('starting benchmark');
     setTimeout(runBenchmark, 1000);
 
-    return (<Show when={data().length > 0}>
+    return (<Show when={data()}>
         <View ref={container}>
             <For each={ data() }>{ (row) => {
-                return <View x={row.x} y={row.y} width={row.width} height={row.height} color={row.color}>
-                    <Text 
+                return <node x={/*@once*/ row.x} y={/*@once*/ row.y} width={/*@once*/ row.width} height={/*@once*/ row.height} color={/*@once*/ row.color}>
+                    <text 
                         x={5}
                         y={2}
-                        width={row.width}
-                        height={row.height}
+                        width={/*@once*/ row.width}
+                        height={/*@once*/ row.height}
                         alpha={0.8}
                         fontFamily={"Ubuntu"}
-                        color={row.textColor}
-                        fontSize={row.fontSize}>
-                        {row.label}
-                    </Text>
-                </View>
+                        color={/*@once*/ row.textColor}
+                        fontSize={/*@once*/ row.fontSize}>
+                        {/*@once*/ row.label}
+                    </text>
+                </node>
             }}
             </For>
         </View>
