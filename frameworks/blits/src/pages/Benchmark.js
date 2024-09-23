@@ -38,7 +38,7 @@ export default Blits.Component('Benchmark', {
   template: `
     <Element :for="item in $items" :w="$item.w" :h="$item.h" :color="$item.color" :x="$item.x" :y="$item.y" key="$item.id">
       <Text
-        content="$item.text"
+        :content="$item.text"
         :color="$item.textColor"
         alpha="0.8"
         :size="$item.fontSize || 26"
@@ -61,9 +61,9 @@ export default Blits.Component('Benchmark', {
         () => this.testUpdateMany(),
         () => this.testSkipNth(),
         () => this.testUpdateRandom(),
-        () => this.testCreateMuchoMany(),
         () => this.testSwapRows(),
         () => this.testRemoveRow(),
+        () => this.testCreateMuchoMany(),
         () => this.testAppendMany(),
         () => this.testClear(),
         () => printResults(results),
