@@ -248,15 +248,15 @@ export const writeResults = (results, frameworkVersions, browserVersion) => {
 
         // write some html
         const frameworksHeader = frameworkNamesAndVersions.map(f => `<th>${f}</th>`).join('');
-        const createRows = frameworks.map(f => `<td>${results[f].create.time} (${results[f].create.mean})</td>`).join('');
-        const updateRows = frameworks.map(f => `<td>${results[f].update.time} (${results[f].update.mean})</td>`).join('');
-        const partialUpdateRows = frameworks.map(f => `<td>${results[f].skipNth.time} (${results[f].skipNth.mean})</td>`).join('');
-        const selectRow = frameworks.map(f => `<td>${results[f].select.time} (${results[f].select.mean})</td>`).join('');
-        const swapRows = frameworks.map(f => `<td>${results[f].swap.time} (${results[f].swap.mean})</td>`).join('');
-        const removeRow = frameworks.map(f => `<td>${results[f].remove.time} (${results[f].remove.mean})</td>`).join('');
-        const createManyRows = frameworks.map(f => `<td>${results[f].createLots.time} (${results[f].createLots.mean})</td>`).join('');
-        const appendRows = frameworks.map(f => `<td>${results[f].append.time} (${results[f].append.mean})</td>`).join('');
-        const clearRows = frameworks.map(f => `<td>${results[f].clear.time} (${results[f].clear.mean})</td>`).join('');
+        const createRows = frameworks.map(f => `<td style="background-color: ${results[f].create.color}; color: rgb(0, 0, 0);">${results[f].create.time} (${results[f].create.mean})</td>`).join('');
+        const updateRows = frameworks.map(f => `<td style="background-color: ${results[f].update.color}; color: rgb(0, 0, 0);">${results[f].update.time} (${results[f].update.mean})</td>`).join('');
+        const partialUpdateRows = frameworks.map(f => `<td style="background-color: ${results[f].skipNth.color}; color: rgb(0, 0, 0);">${results[f].skipNth.time} (${results[f].skipNth.mean})</td>`).join('');
+        const selectRow = frameworks.map(f => `<td style="background-color: ${results[f].select.color}; color: rgb(0, 0, 0);">${results[f].select.time} (${results[f].select.mean})</td>`).join('');
+        const swapRows = frameworks.map(f => `<td style="background-color: ${results[f].swap.color}; color: rgb(0, 0, 0);">${results[f].swap.time} (${results[f].swap.mean})</td>`).join('');
+        const removeRow = frameworks.map(f => `<td style="background-color: ${results[f].remove.color}; color: rgb(0, 0, 0);">${results[f].remove.time} (${results[f].remove.mean})</td>`).join('');
+        const createManyRows = frameworks.map(f => `<td style="background-color: ${results[f].createLots.color}; color: rgb(0, 0, 0);">${results[f].createLots.time} (${results[f].createLots.mean})</td>`).join('');
+        const appendRows = frameworks.map(f => `<td style="background-color: ${results[f].append.color}; color: rgb(0, 0, 0);">${results[f].append.time} (${results[f].append.mean})</td>`).join('');
+        const clearRows = frameworks.map(f => `<td style="background-color: ${results[f].clear.color}; color: rgb(0, 0, 0);">${results[f].clear.time} (${results[f].clear.mean})</td>`).join('');
         const overall = frameworks.map(f => `<td>${results[f].avgMean}</td>`).join('');
         const rowsSize = frameworks.map(f => `<td>${results[f].fileSize} KB</td>`).join('');
         const rowsMemory = frameworks.map(f => {
