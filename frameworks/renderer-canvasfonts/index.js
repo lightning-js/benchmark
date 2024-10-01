@@ -20,8 +20,10 @@ import {
     RendererMain,
 } from '@lightningjs/renderer';
 
-import { colours, adjectives, nouns } from '../../shared/data';
-import { warmup } from '../../shared/utils/warmup';
+import { CanvasCoreRenderer, CanvasTextRenderer } from '@lightningjs/renderer/canvas'
+
+import { colours, adjectives, nouns } from '../../shared/data.js';
+import { warmup } from '../../shared/utils/warmup.js';
 
 const appHeight = 1080;
 const appWidth = 1920;
@@ -30,8 +32,9 @@ const renderer = new RendererMain({
     appWidth: appWidth,
     appHeight: appHeight,
     clearColor: 0x00000000,
-    enableInspector: false,
     numImageWorkers: 1,
+    renderEngine: CanvasCoreRenderer,
+    fontEngines: [ CanvasTextRenderer ]
 }, 'app');
 
 let rootNode = renderer.createNode({
