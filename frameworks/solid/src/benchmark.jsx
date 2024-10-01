@@ -47,7 +47,7 @@ function buildData(count) {
 
 const Benchmark = () => {
     let container;
-    const [data, setData] = createSignal([]),
+    const [data, setData] = createSignal(),
     createMany = (amount = 1000) => {
         return clear().then(() => {
             return new Promise((resolve) => {
@@ -62,7 +62,7 @@ const Benchmark = () => {
     },
     clear = () => { 
         return new Promise((resolve) => {
-            if (data().length === 0) {
+            if (!data) {
                 resolve({ time: 0 });
                 return;
             }
@@ -81,7 +81,7 @@ const Benchmark = () => {
                 resolve({ time: performance.now() - appendPerf });
             });
 
-            setData([...data(), ...buildData(amount)]);
+            setData([...(data() || []), ...buildData(amount)]);
         });
     },
     updateMany = (count = 1000, skip = 0) => {
@@ -219,7 +219,7 @@ const Benchmark = () => {
     console.log('starting benchmark');
     setTimeout(runBenchmark, 1000);
 
-    return (<Show when={data().length > 0}>
+    return (<Show when={data()}>
         <View ref={container}>
             <For each={ data() }>{ (row) => {
                 return <View x={row.x} y={row.y} width={row.width} height={row.height} color={row.color}>
