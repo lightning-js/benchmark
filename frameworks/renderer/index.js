@@ -16,13 +16,11 @@
  */
 
 
-import {
-    RendererMain,
-    SdfTrFontFace,
-} from '@lightningjs/renderer';
+import { RendererMain, SdfTrFontFace } from '@lightningjs/renderer';
+import { WebGlCoreRenderer, SdfTextRenderer } from '@lightningjs/renderer/webgl';
 
-import { colours, adjectives, nouns } from '../../shared/data';
-import { warmup } from '../../shared/utils/warmup';
+import { colours, adjectives, nouns } from '../../shared/data.js';
+import { warmup } from '../../shared/utils/warmup.js';
 
 const appHeight = 1080;
 const appWidth = 1920;
@@ -31,8 +29,9 @@ const renderer = new RendererMain({
     appWidth: appWidth,
     appHeight: appHeight,
     clearColor: 0x00000000,
-    enableInspector: false,
     numImageWorkers: 1,
+    renderEngine: WebGlCoreRenderer,
+    fontEngines: [ SdfTextRenderer ]
 }, 'app');
 
 let rootNode = renderer.createNode({
