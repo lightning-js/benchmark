@@ -19,3 +19,5 @@
 import renderer from '@lightningjs/blits/renderer'
 
 renderer()
+
+export const getRenderer = () => renderer

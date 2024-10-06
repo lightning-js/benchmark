@@ -15,29 +15,51 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-export const warmup = (fn, argument, count = 5) => {
+
+
+const processResults = (results) => {
+    let average = 0;
+    let spread = 0;
+
+    if (results.length > 0) {
+        const sum = results.reduce((acc, time) => acc + time, 0);
+        average = sum / results.length;
+
+        const minTime = Math.min(...results);
+        const maxTime = Math.max(...results);
+        spread = maxTime - minTime;
+    }
+
+    return { average, spread }
+}
+
+export const run = (fn, argument, count = 5) => {
     let i = 0;
+    const results = [];
 
     return new Promise((resolve) => {
-        const runWarmup = (fn, argument, count) => {
+        const runTest = (fn, argument, count) => {
             // check if arguments is an array
             if (!Array.isArray(argument)) {
                 argument = [argument];
             }
 
-            fn(...argument).then(() => {
+            fn(...argument).then((res) => {
+                results.push(res.time);
+
                 i++;
                 if (i < count) {
                     return setTimeout(() => {
-                        runWarmup(fn, argument, count);
+                        runTest(fn, argument, count);
                     }, 100);
                 }
     
-                i = 0;
-                resolve();
+     
+                const { average, spread } = processResults(results);
+                resolve({ average, spread });
             });
         }
 
-        runWarmup(fn, argument, count);
+        runTest(fn, argument, count);
     });
 }

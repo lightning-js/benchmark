@@ -1,6 +1,6 @@
 {
   "name": "lightningjs-benchmark",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "LightningJS Benchmark tool",
   "main": "index.js",
   "type": "module",
