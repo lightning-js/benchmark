@@ -20,12 +20,16 @@ import { createRenderer, Config, View } from "@lightningtv/solid";
 import {
   SdfTrFontFace,
 } from "@lightningjs/renderer";
+import { WebGlCoreRenderer, SdfTextRenderer } from "@lightningjs/renderer/webgl";
+
 import { setRenderer } from "./src/utils/renderer";
+
 
 Config.debug = false;
 Config.animationsEnabled = false;
 Config.rendererOptions = {
-    enableInspector: false,
+  renderEngine: WebGlCoreRenderer,
+  fontEngines: [SdfTextRenderer],
 };
 const Benchmark = lazy(() => import("./src/benchmark"));
 const Memory = lazy(() => import("./src/memory"));

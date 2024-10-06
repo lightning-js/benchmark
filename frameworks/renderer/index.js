@@ -16,13 +16,13 @@
  */
 
 
-import {
-    RendererMain,
-    SdfTrFontFace,
-} from '@lightningjs/renderer';
+import { RendererMain, SdfTrFontFace } from '@lightningjs/renderer';
+import { WebGlCoreRenderer, SdfTextRenderer } from '@lightningjs/renderer/webgl';
 
-import { colours, adjectives, nouns } from '../../shared/data';
-import { warmup } from '../../shared/utils/warmup';
+import { colours, adjectives, nouns } from '../../shared/data.js';
+import { warmup } from '../../shared/utils/warmup.js';
+import { waitUntilIdle } from '../../shared/utils/waitUntilIdle.js';
+import { run } from '../../shared/utils/run.js';
 
 const appHeight = 1080;
 const appWidth = 1920;
@@ -31,8 +31,9 @@ const renderer = new RendererMain({
     appWidth: appWidth,
     appHeight: appHeight,
     clearColor: 0x00000000,
-    enableInspector: false,
     numImageWorkers: 1,
+    renderEngine: WebGlCoreRenderer,
+    fontEngines: [ SdfTextRenderer ]
 }, 'app');
 
 let rootNode = renderer.createNode({
@@ -107,9 +108,8 @@ const createRowWithoutText = (parent, config = {}) => {
 
 const clear = () => {
     return new Promise((resolve) => {
-        let clearPerf = performance.now();
-        renderer.once('idle', () => {
-            const time = performance.now() - clearPerf;
+        const clearPerf = performance.now();
+        waitUntilIdle(renderer, clearPerf).then(time => {
             resolve({ time });
         });
     
@@ -121,12 +121,21 @@ const clear = () => {
     });
 }
 
+const clearTest = () => {
+    return new Promise( resolve => {
+        createMany(1000).then( () => {
+            clear().then( time => {
+                resolve(time);
+            });
+        });
+    });
+}
+
 const createMany = (amount = 1000) => {
     return new Promise((resolve) => {
         clear().then(() => {
             const createPerf = performance.now();
-            renderer.once('idle', () => {
-                const time = performance.now() - createPerf;
+            waitUntilIdle(renderer, createPerf).then(time => {
                 resolve({ time });
             });
 
@@ -144,28 +153,30 @@ const createMany = (amount = 1000) => {
 
 const appendMany = (amount = 1000) => {
     return new Promise((resolve) => {
-        const appendPerf = performance.now();
-        renderer.once('idle', () => {
-            const time = performance.now() - appendPerf;
-            resolve({ time });
-        });
-
-        for (let i = 0; i < amount; i++) {
-            createRow(rootNode, {
-                index: i,
-                color: pick(colours),
-                textColor: pick(colours),
-                text: `${pick(adjectives)} ${pick(nouns)}`
+        clear().then(() => {
+            createMany(1000).then( () => {
+                const appendPerf = performance.now();
+                waitUntilIdle(renderer, appendPerf).then(time => {
+                    resolve({ time });
+                });
+        
+                for (let i = 0; i < amount; i++) {
+                    createRow(rootNode, {
+                        index: i,
+                        color: pick(colours),
+                        textColor: pick(colours),
+                        text: `${pick(adjectives)} ${pick(nouns)}`
+                    });
+                }
             });
-        }
+        });
     });
 }
 
 const updateMany = (count, skip = 0) => {
     return new Promise((resolve) => {
         const updateManyPerf = performance.now();
-        renderer.once('idle', () => {
-            const time = performance.now() - updateManyPerf;
+        waitUntilIdle(renderer, updateManyPerf).then(time => {
             resolve({ time });
         });
 
@@ -183,8 +194,7 @@ const updateMany = (count, skip = 0) => {
 const swapRows = () => {
     return new Promise((resolve) => {
         const swapPerf = performance.now();
-        renderer.once('idle', () => {
-            const time = performance.now() - swapPerf;
+        waitUntilIdle(renderer, swapPerf).then(time => {
             resolve({ time });
         });
 
@@ -209,13 +219,12 @@ const swapRows = () => {
 const selectRandomNode = () => {
     return new Promise((resolve) => {
         const selectPerf = performance.now();
-        renderer.once('idle', () => {
-            const time = performance.now() - selectPerf;
+
+        waitUntilIdle(renderer, selectPerf).then(time => {
             resolve({ time });
         });
 
         const randomNode = rootNode.children[Math.floor(Math.random() * rootNode.children.length)];
-
         randomNode.x = 100;
         randomNode.y = 100;
         randomNode.color = 0xFF0000FF; //red
@@ -233,8 +242,7 @@ const selectRandomNode = () => {
 const removeRow = () => {
     return new Promise((resolve) => {
         const removePerf = performance.now();
-        renderer.once('idle', () => {
-            const time = performance.now() - removePerf;
+        waitUntilIdle(renderer, removePerf).then(time => {
             resolve({ time });
         });
 
@@ -246,8 +254,7 @@ const createManyWithoutText = (amount = 20000) => {
     return new Promise((resolve) => {
         clear().then(() => {
             const createPerf = performance.now();
-            renderer.once('idle', () => {
-                const time = performance.now() - createPerf;
+            waitUntilIdle(renderer, createPerf).then(time => {
                 resolve({ time });
             });
 
@@ -279,55 +286,53 @@ const runBenchmark = async () => {
     const results = {};
 
     await warmup(createMany, 1000, 5);
-    const createRes = await createMany(1000)
-    results.create = createRes.time.toFixed(2);
+    const { average: createAvg, spread: createSpread } = await run(createMany, 1000, 5);
+    results.create = `${createAvg.toFixed(2)}ms ±${createSpread.toFixed(2)}`;
 
     await createMany(1000);
     await warmup(updateMany, 1000, 5);
     await createMany(1000);
-    const updateManyRes = await updateMany(1000);
-    results.update = updateManyRes.time.toFixed(2);
+    const { average: updateAvg, spread: updateSpread } = await run(updateMany, 1000, 5);
+    results.update = `${updateAvg.toFixed(2)}ms ±${updateSpread.toFixed(2)}`;
 
     await createMany(1000);
     await warmup(updateMany, [1000, 10], 5);
     await createMany(1000);
-    const skipNthRes = await updateMany(1000, 10);
-    results.skipNth = skipNthRes.time.toFixed(2);
+    const { average: skipNthAvg, spread: skipNthSpread } = await run(updateMany, [1000, 10], 5);
+    results.skipNth = `${skipNthAvg.toFixed(2)}ms ±${skipNthSpread.toFixed(2)}`;
 
     await createMany(1000);
     await warmup(selectRandomNode, undefined, 5);
     await createMany(1000);
-    const selectRes = await selectRandomNode();
-    results.select = selectRes.time.toFixed(2);
+    const { average: selectAvg, spread: selectSpread } = await run(selectRandomNode, undefined, 5);
+    results.select = `${selectAvg.toFixed(2)}ms ±${selectSpread.toFixed(2)}`;
 
     await createMany(1000);
     await warmup(swapRows, undefined, 5);
     await createMany(1000);
-    const swapRes = await swapRows();
-    results.swap = swapRes.time.toFixed(2);
+    const { average: swapAvg, spread: swapSpread } = await run(swapRows, undefined, 5);
+    results.swap = `${swapAvg.toFixed(2)}ms ±${swapSpread.toFixed(2)}`;
 
     await createMany(1000);
     await warmup(removeRow, undefined, 5);
     await createMany(1000);
-    const removeRes = await removeRow();
-    results.remove = removeRes.time.toFixed(2);
+    const { average: removeAvg, spread: removeSpread } = await run(removeRow, undefined, 5);
+    results.remove = `${removeAvg.toFixed(2)}ms ±${removeSpread.toFixed(2)}`;
 
     await warmup(createMany, 10000, 5);
-    const createResLots = await createMany(10000)
-    results.createLots = createResLots.time.toFixed(2);
+    const { average: createLotsAvg, spread: createLotsSpread } = await run(createMany, 10000, 5);
+    results.createLots = `${createLotsAvg.toFixed(2)}ms ±${createLotsSpread.toFixed(2)}`;
 
-    await clear();
     await warmup(appendMany, 1000, 5);
-    await createMany(1000);
-    const appendRes = await appendMany(1000);
-    results.append = appendRes.time.toFixed(2);
+    const { average: appendAvg, spread: appendSpread } = await run(appendMany, 10000, 5);
+    results.append = `${appendAvg.toFixed(2)}ms ±${appendSpread.toFixed(2)}`;
 
-    await warmup(createMany, 1000, 5);
-    const clearRes = await clear();
-    results.clear = clearRes.time.toFixed(2);
+    await warmup(clearTest, 1000, 5);
+    const { average: clearAvg, spread: clearSpread } = await run(clearTest, 10000, 5);
+    results.clear = `${clearAvg.toFixed(2)}ms ±${clearSpread.toFixed(2)}`;
 
     Object.keys(results).forEach(key => {
-        console.log(`${key}: ${results[key]}ms`);
+        console.log(`${key}: ${results[key]}`);
     });
 
     console.log('Done!', results);

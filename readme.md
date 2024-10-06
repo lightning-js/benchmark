@@ -3,6 +3,8 @@
 Allows the user to test various configurations with the Lightning JS project.
 Similar to https://github.com/krausest/js-framework-benchmark the Lightning JS benchmark will execute a series of operations to measure the throughput of the framework.
 
+For the official results please see https://lightning-js.github.io/benchmark/
+
 ## Operations
 
 The following operations will be executed:
@@ -51,4 +53,20 @@ You can also run individual commands by doing:
 To build a framework or if you want to copy the files:
 
 `npm run copy:<x>`
+
+# Implemented weighted results
+
+As of v0.0.2 the Lightning Benchmark implements weighted mean results for different operations. Not all operations are equal when executed, certain framework operations hold a higher weight in terms of measurable impact. The weights used as similar to [https://github.com/krausest/js-framework-benchmark/wiki/Computation-of-the-weighted-geometric-mean](Krauset) and are setup as follows:
+
+| test | weight |
+| ---- | ------ |
+| create | 0.64 |
+| update | 0.56 |
+| skipNth | 0.56 |
+| select | 0.19 |
+| swap | 0.13 |
+| remove | 0.53 |
+| createLots | 0.56 |
+| append | 0.55 |
+| clear | 0.42 |
 

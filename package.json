@@ -1,6 +1,6 @@
 {
   "name": "lightningjs-benchmark",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "LightningJS Benchmark tool",
   "main": "index.js",
   "type": "module",
@@ -8,7 +8,8 @@
     "build": "node build.js",
     "setup": "npm install && npm run build",
     "setup:playwright": "npx playwright install",
-    "start": "concurrently --kill-others --success last \"npx http-server -c-1 ./dist/\" \"node index.js --only lightning2 renderer-canvasfonts\""
+    "start": "concurrently --kill-others --success last \"npx http-server -c-1 ./dist/\" \"node index.js\"",
+    "start:official": "concurrently --kill-others --success last \"npx http-server -c-1 ./dist/\" \"node index.js --results\""
   },
   "author": "",
   "license": "MIT",
