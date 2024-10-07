@@ -32,6 +32,6 @@
     "vite": "^4.0.4"
   },
   "dependencies": {
-    "@lightningjs/blits": "github:lightning-js/blits#dev"
+    "@lightningjs/blits": "^1.5.1"
   }
 }
