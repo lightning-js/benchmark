@@ -16,6 +16,7 @@
  */
 
 import { colourNames, adjectives, nouns } from '../../../shared/data.js'
+import { waitUntilIdle } from '../../../shared/utils/waitUntilIdle.js'
 
 // tools
 const pick = (dict) => dict[Math.round(Math.random() * 1000) % dict.length]
@@ -35,19 +36,18 @@ const printResults = (results, type = 'benchmark') => {
   let processedResults = {}
 
   Object.keys(results).forEach((key) => {
-    console.log(`${key}: ${results[key].time.toFixed(2)}ms`)
-    processedResults[key] = results[key].time.toFixed(2)
+    console.log(`${key}: ${results[key]}`)
+    processedResults[key] = results[key]
   })
 
   console.log(text, processedResults)
 }
 
 // data
-let done
 let count = 1
 
-const getDone = () => done
-const setDone = (fn) => (done = fn)
+let renderer
+const setRenderer = (r) => (renderer = r)
 
 // test methods
 const createItem = (x, y, key) => {
@@ -76,15 +76,39 @@ const createItemWithoutText = (x, y, key) => {
 
 const clear = function () {
   return new Promise((resolve) => {
-    done = resolve
+    if (this.items.length === 0) {
+      return resolve({
+        time: 0,
+      })
+    }
+
+    const clearPerf = performance.now()
+    waitUntilIdle(renderer, clearPerf).then((time) => {
+      resolve({ time })
+    })
+
     this.items = []
+  })
+}
+
+const clearTest = function () {
+  return new Promise((resolve) => {
+    createMany.call(this, 1000).then(() => {
+      clear.call(this).then((time) => {
+        resolve(time)
+      })
+    })
   })
 }
 
 const createMany = function (amount) {
   return new Promise((resolve) => {
     clear.call(this).then(() => {
-      done = resolve
+      const createPerf = performance.now()
+      waitUntilIdle(renderer, createPerf).then((time) => {
+        resolve({ time })
+      })
+
       const items = []
 
       let x = 0
@@ -104,7 +128,11 @@ const createMany = function (amount) {
 const createManyWithoutText = function (amount = 20000) {
   return new Promise((resolve) => {
     clear.call(this).then(() => {
-      done = resolve
+      const createManyPerf = performance.now()
+      waitUntilIdle(renderer, createManyPerf).then((time) => {
+        resolve({ time })
+      })
+
       const items = []
 
       let x = 0
@@ -123,7 +151,11 @@ const createManyWithoutText = function (amount = 20000) {
 
 const updateMany = function (skip = 0) {
   return new Promise((resolve) => {
-    done = resolve
+    const perf = performance.now()
+    waitUntilIdle(renderer, perf).then((time) => {
+      resolve({ time })
+    })
+
     for (let i = 0; i < this.items.length; i += skip + 1) {
       this.items[i].color = pick(colourNames)
       this.items[i].textColor = pick(colourNames)
@@ -135,7 +167,11 @@ const updateMany = function (skip = 0) {
 
 const updateRandom = function () {
   return new Promise((resolve) => {
-    done = resolve
+    const perf = performance.now()
+    waitUntilIdle(renderer, perf).then((time) => {
+      resolve({ time })
+    })
+
     const randomIdx = Math.floor(Math.random() * this.items.length)
 
     this.items[randomIdx].color = 'red'
@@ -150,7 +186,10 @@ const updateRandom = function () {
 
 const swapRows = function () {
   return new Promise((resolve) => {
-    done = resolve
+    const perf = performance.now()
+    waitUntilIdle(renderer, perf).then((time) => {
+      resolve({ time })
+    })
 
     const a = this.items[0]
     const b = this.items[this.items.length - 2]
@@ -162,31 +201,43 @@ const swapRows = function () {
 
 const removeRow = function () {
   return new Promise((resolve) => {
-    done = resolve
+    const perf = performance.now()
+    waitUntilIdle(renderer, perf).then((time) => {
+      resolve({ time })
+    })
+
     this.items.pop()
   })
 }
 
 const appendMany = function (amount) {
   return new Promise((resolve) => {
-    done = resolve
+    clear.call(this).then(() => {
+      createMany.call(this, 1000).then((t) => {
+        const appendPerf = performance.now()
+        waitUntilIdle(renderer, appendPerf).then((time) => {
+          resolve({ time })
+        })
 
-    const newItems = this.items.slice()
-    let x = 0
-    let y = 0
-    for (let i = 1; i < amount + 1; i++) {
-      newItems.push(createItem(x, y))
+        const newItems = this.items.slice()
+        let x = 0
+        let y = 0
+        for (let i = 1; i < amount + 1; i++) {
+          newItems.push(createItem(x, y))
 
-      x = (i % 27) * 40
-      y = ~~(i / 27) * 40
-    }
+          x = (i % 27) * 40
+          y = ~~(i / 27) * 40
+        }
 
-    this.items = newItems
+        this.items = newItems
+      })
+    })
   })
 }
 
 export {
   clear,
+  clearTest,
   sequence,
   printResults,
   createMany,
@@ -196,6 +247,5 @@ export {
   swapRows,
   removeRow,
   appendMany,
-  getDone,
-  setDone,
+  setRenderer,
 }

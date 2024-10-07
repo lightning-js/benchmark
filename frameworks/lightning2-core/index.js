@@ -7,6 +7,7 @@ import Lightning from '@lightningjs/core';
 
 import { adjectives, nouns } from '../../shared/data';
 import { warmup } from '../../shared/utils/warmup';
+import { run } from '../../shared/utils/run.js';
 
 // apply CSS styling
 const style = document.createElement('style');
@@ -90,6 +91,17 @@ export class App extends Lightning.Application {
             this.stage.once('frameEnd', () => {
                 const time = performance.now() - clearPerf;
                 resolve({ time });
+            });
+        });
+    }
+
+    
+    clearTest() {
+        return new Promise( resolve => {
+            this.createMany(1000).then( () => {
+                this._clear().then( time => {
+                    resolve(time);
+                });
             });
         });
     }
@@ -248,15 +260,19 @@ export class App extends Lightning.Application {
 
     appendMany(amount = 1000) {
         return new Promise( resolve => {
-            const appendPerf = performance.now();
-            const items = this.tag('Items');
-            for (let i = 0; i < amount; i++) {
-                this._createRow(items, i);
-            }
+            this._clear().then(() => {
+                this.createMany(1000).then(() =>{
+                    const appendPerf = performance.now();
+                    const items = this.tag('Items');
+                    for (let i = 0; i < amount; i++) {
+                        this._createRow(items, i);
+                    }
 
-            this.stage.once('frameEnd', () => {
-                const time = performance.now() - appendPerf;
-                resolve({ time });
+                    this.stage.once('frameEnd', () => {
+                        const time = performance.now() - appendPerf;
+                        resolve({ time });
+                    });
+                });
             });
         });
     }
@@ -264,74 +280,49 @@ export class App extends Lightning.Application {
     async runBenchmark() {
         const results = {}
 
-        console.log('Starting createMany benchmark');
-        
         await warmup(this.createMany.bind(this), 1000, 5);
-        const createRes = await this.createMany(1000);
-        results.create = createRes.time.toFixed(2);
-
-        console.log('Starting updateMany benchmark')
+        const { average: createAvg, spread: createSpread } = await run(this.createMany.bind(this), 1000, 5);
+        results.create = `${createAvg.toFixed(2)}ms ±${createSpread.toFixed(2)}`;
 
         await this.createMany(1000);
         await warmup(this.updateMany.bind(this), 1000, 5);
         await this.createMany(1000);
-        const updateRes = await this.updateMany(1000);
-        results.update = updateRes.time.toFixed(2);
-
-        console.log('Starting updateMany with skip benchmark')
+        const { average: updateAvg, spread: updateSpread } = await run(this.updateMany.bind(this), 1000, 5);
+        results.update = `${updateAvg.toFixed(2)}ms ±${updateSpread.toFixed(2)}`;
 
         await this.createMany(1000);
         await warmup(this.updateMany.bind(this), [1000, 10], 5);
         await this.createMany(1000);
-        const skipNthRes = await this.updateMany(1000, 10);
-        results.skipNth = skipNthRes.time.toFixed(2);
-
-        console.log('Starting selectRandomNode benchmark');
+        const { average: skipNthAvg, spread: skipNthSpread } = await run(this.updateMany.bind(this), [1000, 10], 5);
+        results.skipNth = `${skipNthAvg.toFixed(2)}ms ±${skipNthSpread.toFixed(2)}`;
 
         await this.createMany(1000);
         await warmup(this.selectRandomNode.bind(this), undefined, 5);
         await this.createMany(1000);
-        const selectRes = await this.selectRandomNode();
-        results.select = selectRes.time.toFixed(2);
-
-        console.log('Starting swapRows benchmark');
+        const { average: selectAvg, spread: selectSpread } = await run(this.selectRandomNode.bind(this), undefined, 5);
+        results.select = `${selectAvg.toFixed(2)}ms ±${selectSpread.toFixed(2)}`;
 
         await warmup(this.swapRows.bind(this), undefined, 5);
-        const swapRes = await this.swapRows();
-        results.swap = swapRes.time.toFixed(2);
-
-        console.log('Starting removeRow benchmark');
+        const { average: swapAvg, spread: swapSpread } = await run(this.swapRows.bind(this), undefined, 5);
+        results.swap = `${swapAvg.toFixed(2)}ms ±${swapSpread.toFixed(2)}`;
 
         await this.createMany(1000);
         await warmup(this.removeRow.bind(this), undefined, 5);
         await this.createMany(1000);
-        const removeRes = await this.removeRow();
-        results.remove = removeRes.time.toFixed(2);
-
-        console.log('Starting createMany with 10k items benchmark');
+        const { average: removeAvg, spread: removeSpread } = await run(this.removeRow.bind(this), undefined, 5);
+        results.remove = `${removeAvg.toFixed(2)}ms ±${removeSpread.toFixed(2)}`;
 
         await warmup(this.createMany.bind(this), 10000, 5);
-        const createResLots = await this.createMany(10000);
-        results.createLots = createResLots.time.toFixed(2);
+        const { average: createLotsAvg, spread: createLotsSpread } = await run(this.createMany.bind(this), 10000, 5);
+        results.createLots = `${createLotsAvg.toFixed(2)}ms ±${createLotsSpread.toFixed(2)}`;
 
-        console.log('Starting appendMany benchmark');
+        await warmup(this.appendMany.bind(this), 1000, 5);
+        const { average: appendAvg, spread: appendSpread } = await run(this.appendMany.bind(this), 10000, 5);
+        results.append = `${appendAvg.toFixed(2)}ms ±${appendSpread.toFixed(2)}`;
 
-        await this._clear();
-        // L2 goes out of array bounds if we append 5x1000 items
-        // so we appeend 2x 1000 with a clear inbetween instead
-        // this is only for the warmup phase so it's fine
-        await warmup(this.appendMany.bind(this), 1000, 2);
-        await this._clear();
-        await warmup(this.createMany.bind(this), 1000, 2);
-        await this.createMany(1000);
-        const appendRes = await this.appendMany(1000);
-        results.append = appendRes.time.toFixed(2);
-
-        console.log('Starting clear benchmark');
-
-        await warmup(this.createMany.bind(this), 1000, 5);
-        const clearRes = await this._clear();
-        results.clear = clearRes.time.toFixed(2);
+        await warmup(this.clearTest.bind(this), 1000, 5);
+        const { average: clearAvg, spread: clearSpread } = await run(this.clearTest.bind(this), 10000, 5);
+        results.clear = `${clearAvg.toFixed(2)}ms ±${clearSpread.toFixed(2)}`;
 
         Object.keys(results).forEach(key => {
             console.log(`${key}: ${results[key]}ms`);

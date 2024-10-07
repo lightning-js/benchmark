@@ -16,9 +16,9 @@
  */
 
 import Blits from '@lightningjs/blits'
-import { warmup } from '../../../../shared/utils/warmup'
+import { warmup } from '../../../../shared/utils/warmup.js'
 import {
-  clear,
+  clearTest,
   sequence,
   printResults,
   createMany,
@@ -27,11 +27,9 @@ import {
   swapRows,
   removeRow,
   appendMany,
-  getDone,
-  setDone,
-} from '../perf'
+} from '../perf.js'
+import { run } from '../../../../shared/utils/run.js'
 
-let perf
 const results = {}
 
 export default Blits.Component('Benchmark', {
@@ -69,65 +67,78 @@ export default Blits.Component('Benchmark', {
         () => printResults(results),
       ])
     },
-    idle() {
-      const done = getDone()
-      if (done) {
-        const now = performance.now()
-        const time = now - perf
-        perf = now
-        done({ time })
-        setDone(null)
-      }
-    },
   },
   methods: {
     async testCreateMany() {
       await warmup(createMany.bind(this), 1000, 5)
-      results.create = await createMany.call(this, 1000)
+      const { average: createAvg, spread: createSpread } = await run(createMany.bind(this), 1000, 5)
+      results.create = `${createAvg.toFixed(2)}ms ±${createSpread.toFixed(2)}`
     },
     async testUpdateMany() {
       await createMany.call(this, 1000)
       await warmup(updateMany.bind(this), 5)
       await createMany.call(this, 1000)
-      results.update = await updateMany.call(this)
+
+      const { average: updateAvg, spread: updateSpread } = await run(updateMany.bind(this), 5)
+      results.update = `${updateAvg.toFixed(2)}ms ±${updateSpread.toFixed(2)}`
     },
     async testSkipNth() {
       await createMany.call(this, 1000)
       await warmup(updateMany.bind(this), 10, 5)
       await createMany.call(this, 1000)
-      results.skipNth = await updateMany.call(this, 10)
+
+      const { average: skipNthAvg, spread: skipNthSpread } = await run(updateMany.bind(this), 10, 5)
+      results.skipNth = `${skipNthAvg.toFixed(2)}ms ±${skipNthSpread.toFixed(2)}`
     },
     async testUpdateRandom() {
       await createMany.call(this, 1000)
       await warmup(updateRandom.bind(this), 5)
       await createMany.call(this, 1000)
-      results.select = await updateRandom.call(this)
+
+      const { average: selectAvg, spread: selectSpread } = await run(updateRandom.bind(this), 5)
+      results.select = `${selectAvg.toFixed(2)}ms ±${selectSpread.toFixed(2)}`
     },
     async testSwapRows() {
       await createMany.call(this, 1000)
       await warmup(swapRows.bind(this), 5)
       await createMany.call(this, 1000)
-      results.swap = await swapRows.call(this)
+
+      const { average: swapAvg, spread: swapSpread } = await run(swapRows.bind(this), undefined, 5)
+      results.swap = `${swapAvg.toFixed(2)}ms ±${swapSpread.toFixed(2)}`
     },
     async testRemoveRow() {
       await createMany.call(this, 1000)
       await warmup(removeRow.bind(this), 5)
       await createMany.call(this, 1000)
-      results.remove = await removeRow.call(this)
+
+      const { average: removeAvg, spread: removeSpread } = await run(removeRow.bind(this), 5)
+      results.remove = `${removeAvg.toFixed(2)}ms ±${removeSpread.toFixed(2)}`
     },
     async testCreateMuchoMany() {
       await warmup(createMany.bind(this), 10000, 5)
-      results.createLots = await createMany.call(this, 10000)
+      const { average: createLotsAvg, spread: createLotsSpread } = await run(
+        createMany.bind(this),
+        10000,
+        5
+      )
+
+      results.createLots = `${createLotsAvg.toFixed(2)}ms ±${createLotsSpread.toFixed(2)}`
     },
     async testAppendMany() {
-      await clear.call(this)
       await warmup(appendMany.bind(this), 1000, 5)
-      await createMany.call(this, 1000)
-      results.append = await appendMany.call(this, 1000)
+
+      const { average: appendAvg, spread: appendSpread } = await run(
+        appendMany.bind(this),
+        10000,
+        5
+      )
+
+      results.append = `${appendAvg.toFixed(2)}ms ±${appendSpread.toFixed(2)}`;
     },
     async testClear() {
-      await warmup(createMany.bind(this), 1000, 5)
-      results.clear = await clear.call(this)
+      await warmup(clearTest.bind(this), 1000, 5)
+      const { average: clearAvg, spread: clearSpread } = await run(clearTest.bind(this), 10000, 5)
+      results.clear = `${clearAvg.toFixed(2)}ms ±${clearSpread.toFixed(2)}`
     },
   },
 })

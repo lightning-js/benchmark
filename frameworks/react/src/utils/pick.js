@@ -15,27 +15,4 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import Blits from '@lightningjs/blits'
-
-import Benchmark from './pages/Benchmark.js'
-import Memory from './pages/Memory.js'
-import symbols from '@lightningjs/blits/symbols'
-import { setRenderer } from './perf.js'
-
-export default Blits.Application({
-  template: `
-    <Element>
-      <RouterView />
-    </Element>
-  `,
-  routes: [
-    { path: '/', component: Benchmark },
-    { path: '/memory', component: Memory },
-  ],
-  hooks: {
-    async ready() {
-      const renderer = this[symbols['renderer']]()
-      setRenderer(renderer)
-    },
-  },
-})
+export const pick = (dict) => dict[Math.round(Math.random() * 1000) % dict.length];
