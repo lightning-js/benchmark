@@ -17,14 +17,14 @@
 
 import {
   Canvas,
-  SdfTrFontFace,
   createRoot as createRootLng,
-} from '@plex/react-lightning';
-import { keyMap } from './src/keyMap';
+} from '@plexinc/react-lightning';
+import { SdfTrFontFace } from '@lightningjs/renderer';
+import { keyMap } from './src/keyMap.js';
 import { RouterProvider, createHashRouter } from 'react-router-dom';
-import { Benchmark } from './src/pages/Benchmark';
-import { Memory } from './src/pages/Memory';
-import { setRenderer } from './src/utils/renderer';
+import { Benchmark } from './src/pages/Benchmark.jsx';
+import { Memory } from './src/pages/Memory.jsx';
+import { setRenderer } from './src/utils/renderer.js';
 
 const router = createHashRouter([
   {

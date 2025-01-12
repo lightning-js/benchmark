@@ -9,15 +9,15 @@
   },
   "author": "",
   "license": "MIT",
+  "type": "module",
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.1",
     "vite": "^5.4.1",
     "vite-plugin-static-copy": "^0.17.1"
   },
   "dependencies": {
-    "@lightningjs/renderer": "2.3.2",
-    "@plex/react-lightning": "file:../../../react-lightning/packages/react-lightning",
-    "@plex/react-lightning-plugin-inspector": "file:../../../react-lightning/packages/plugin-inspector",
+    "@lightningjs/renderer": "2.8.0",
+    "@plexinc/react-lightning": "^0.1.0",
     "react": "^18.3.1",
     "react-router-dom": "^6.26.1"
   }
