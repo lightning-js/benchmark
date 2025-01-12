@@ -33,6 +33,7 @@ Config.rendererOptions = {
 };
 const Benchmark = lazy(() => import("./src/benchmark"));
 const Memory = lazy(() => import("./src/memory"));
+const Flex = lazy(() => import("./src/flex"));
 
 const App = (props) => {
   return (
@@ -61,6 +62,7 @@ render(() => (
     <HashRouter root={(props) => <App {...props} />}>
       <Route path="" component={Benchmark} />
       <Route path="memory" component={Memory} />
+      <Route path="flex" component={Flex} />
     </HashRouter>
 ));
 

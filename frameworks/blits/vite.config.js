@@ -21,7 +21,7 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
       fs: {
         allow: ['..'],
       },
-      port: 1234,
+      port: 5173,
     },
     worker: {
       format: 'es',

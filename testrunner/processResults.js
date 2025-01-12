@@ -28,7 +28,7 @@ export const processResults = (results, memoryResults, fileSizeResults) => {
 
     // find fastest time for each operation
     frameworks.forEach(f => {
-        const framework = results[f];
+        const framework = results[f] || {};
         const times = Object.keys(framework);
 
         console.log(times);
@@ -50,7 +50,7 @@ export const processResults = (results, memoryResults, fileSizeResults) => {
 
     // process results and calculate mean
     frameworks.forEach(f => {
-        const framework = results[f];
+        const framework = results[f] || {};
         const times = Object.keys(framework);
 
         // process results

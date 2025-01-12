@@ -74,6 +74,17 @@ const createItemWithoutText = (x, y, key) => {
   }
 }
 
+const createItemWithoutPositions = (key) => {
+  return {
+    id: key || 'key' + count++,
+    w: 40,
+    h: 40,
+    color: pick(colourNames),
+    textColor: pick(colourNames),
+    text: `${pick(adjectives)} ${pick(nouns)}`,
+  }
+}
+
 const clear = function () {
   return new Promise((resolve) => {
     if (this.items.length === 0) {
@@ -149,6 +160,31 @@ const createManyWithoutText = function (amount = 20000) {
   })
 }
 
+const createManyWithoutPositions = function (amount) {
+  return new Promise((resolve) => {
+    clear.call(this).then(() => {
+      const createPerf = performance.now()
+      waitUntilIdle(renderer, createPerf).then((time) => {
+        resolve({ time })
+      })
+
+      const items = []
+      let count = 0
+      while (count < amount) {
+        const row = []
+        for (let i = 0; i < 27 && count < amount; i++) {
+          row.push(createItemWithoutPositions())
+          count++
+        }
+
+        items.push(row)
+      }
+
+      this.items = items
+    })
+  })
+}
+
 const updateMany = function (skip = 0) {
   return new Promise((resolve) => {
     const perf = performance.now()
@@ -161,6 +197,24 @@ const updateMany = function (skip = 0) {
       this.items[i].textColor = pick(colourNames)
       this.items[i].text = `${pick(adjectives)} ${pick(nouns)}`
     }
+    this.$trigger('items')
+  })
+}
+
+const updateManyWidth = function (skip = 0) {
+  return new Promise((resolve) => {
+    const perf = performance.now()
+    waitUntilIdle(renderer, perf).then((time) => {
+      resolve({ time })
+    })
+
+    for (let i = 0; i < this.items.length; i++) {
+      const row = this.items[i]
+      for (let j = 0; j < row.length; j += skip + 1) {
+        row[j].w = 100
+      }
+    }
+
     this.$trigger('items')
   })
 }
@@ -242,6 +296,8 @@ export {
   printResults,
   createMany,
   createManyWithoutText,
+  createManyWithoutPositions,
+  updateManyWidth,
   updateMany,
   updateRandom,
   swapRows,

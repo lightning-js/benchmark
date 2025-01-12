@@ -20,11 +20,15 @@ import {
   createRoot as createRootLng,
 } from '@plexinc/react-lightning';
 import { SdfTrFontFace } from '@lightningjs/renderer';
+import flexPlugin from '@plexinc/react-lightning-plugin-flexbox';
+
 import { keyMap } from './src/keyMap.js';
 import { RouterProvider, createHashRouter } from 'react-router-dom';
 import { Benchmark } from './src/pages/Benchmark.jsx';
 import { Memory } from './src/pages/Memory.jsx';
+import { Flex } from './src/pages/Flex.jsx';
 import { setRenderer } from './src/utils/renderer.js';
+
 
 const router = createHashRouter([
   {
@@ -35,6 +39,10 @@ const router = createHashRouter([
     path: 'memory',
     element: <Memory />,
   },
+  {
+    path: 'flex',
+    element: <Flex />,
+  }
 ]);
 
 const options = {
@@ -49,7 +57,7 @@ const options = {
       stage,
     })
   ],
-  plugins: [],
+  plugins: [flexPlugin()],
 };
 
 const App = () => (
