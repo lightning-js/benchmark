@@ -1,4 +1,4 @@
-import { Keys } from '@plex/react-lightning';
+import { Keys } from '@plexinc/react-lightning';
 
 const keyMap = {
   37: Keys.Left,
