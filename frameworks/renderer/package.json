@@ -12,7 +12,7 @@
   "license": "MIT",
   "description": "",
   "dependencies": {
-    "@lightningjs/renderer": "^2.4.0"
+    "@lightningjs/renderer": "^2.8.0"
   },
   "devDependencies": {
     "vite": "^4.5.0",
