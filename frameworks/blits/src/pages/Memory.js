@@ -22,7 +22,9 @@ const results = {}
 
 export default Blits.Component('Memory', {
   template: `
-    <Element :for="item in $items" w="4" h="4" :color="$item.color" x="$item.x" y="$item.y" key="$item.id" />
+    <Element>
+      <Element :for="item in $items" w="4" h="4" :color="$item.color" x="$item.x" y="$item.y" key="$item.id" />
+    </Element>
   `,
   state() {
     return {
