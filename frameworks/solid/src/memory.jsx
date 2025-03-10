@@ -15,8 +15,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { For } from "solid-js";
-import { View } from "@lightningtv/solid";
 import { colours } from '../../../shared/data';
 import { pick } from "./utils/pick";
 import { getRenderer } from "./utils/renderer";
@@ -51,12 +49,15 @@ const Memory = () => {
         console.log('Memory!', results);
     });
 
-    return (
-        <For each={ data }>{ (row) => {
-            return <View x={/*@once*/ row.x} y={/*@once*/ row.y} width={4} height={4} color={/*@once*/ row.color}></View>
-        }}
-        </For>
-  );
+    return data.map((row) => (
+        <view
+          x={/*@once*/ row.x}
+          y={/*@once*/ row.y}
+          width={4}
+          height={4}
+          color={/*@once*/ row.color}
+        />
+      ));
 };
 
 export default Memory;

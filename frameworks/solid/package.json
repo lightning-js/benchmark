@@ -13,14 +13,14 @@
   "license": "MIT",
   "description": "",
   "dependencies": {
-    "@lightningtv/solid": "^2.7.0",
-    "@lightningjs/renderer": "^2.13.0",
-    "@solidjs/router": "^0.15.1",
-    "solid-js": "^1.8.17"
+    "@lightningjs/renderer": "2.13.0",
+    "@lightningtv/solid": "^2.7.7",
+    "@solidjs/router": "^0.15.3",
+    "solid-js": "^1.9.5"
   },
   "devDependencies": {
-    "vite": "^4.5.0",
-    "vite-plugin-solid": "^2.7.2",
-    "vite-plugin-static-copy": "^0.17.1"
+    "vite": "^6.2.0",
+    "vite-plugin-solid": "^2.11.6",
+    "vite-plugin-static-copy": "^2.3.0"
   }
 }
