@@ -187,9 +187,9 @@ const Benchmark = () => {
         results.update = `${updateAvg.toFixed(2)}ms ±${updateSpread.toFixed(2)}`;
     
         await createMany(1000);
-        await warmup(updateMany, [1000, 10], 5);
+        await warmup(updateMany, 1000, 10);
         await createMany(1000);
-        const { average: skipNthAvg, spread: skipNthSpread } = await run(updateMany, [1000, 10], 5);
+        const { average: skipNthAvg, spread: skipNthSpread } = await run(updateMany, 1000, 10);
         results.skipNth = `${skipNthAvg.toFixed(2)}ms ±${skipNthSpread.toFixed(2)}`;
     
         await createMany(1000);

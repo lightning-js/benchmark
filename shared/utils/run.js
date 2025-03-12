@@ -41,7 +41,7 @@ export const run = (fn, argument, count = 5) => {
         const runTest = (fn, argument, count) => {
             // check if arguments is an array
             if (!Array.isArray(argument)) {
-                argument = [argument];
+                argument = [argument, count];
             }
 
             fn(...argument).then((res) => {
