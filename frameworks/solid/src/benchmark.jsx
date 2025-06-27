@@ -229,8 +229,8 @@ const Benchmark = () => {
     return (<Show when={data().length}>
         <View ref={container}>
           <Index each={data()}>{(row) => (
-                    <view x={row().x} y={row().y} width={row().width} height={row().height} color={row().color}>
-                        <text 
+                    <View x={row().x} y={row().y} width={row().width} height={row().height} color={row().color}>
+                        <Text 
                             x={5}
                             y={2}
                             width={row().width}
@@ -240,8 +240,8 @@ const Benchmark = () => {
                             color={row().textColor}
                             fontSize={row().fontSize}>
                             {row().label}
-                        </text>
-                    </view>
+                        </Text>
+                    </View>
                 )}</Index>
         </View>
     </Show>
