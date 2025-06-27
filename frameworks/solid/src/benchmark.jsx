@@ -51,7 +51,7 @@ const Benchmark = () => {
     let container;
     const renderer = getRenderer();
 
-    const [data, setData] = createSignal(),
+    const [data, setData] = createSignal([]),
     createMany = (amount = 1000) => {
         return clear().then(() => {
             return new Promise((resolve) => {
@@ -66,7 +66,7 @@ const Benchmark = () => {
     },
     clear = () => { 
         return new Promise((resolve) => {
-            if (!data) {
+            if (!data().length) {
                 resolve({ time: 0 });
                 return;
             }
@@ -97,17 +97,21 @@ const Benchmark = () => {
                 resolve({ time });
             });
 
-            const d = data().slice();
-            for(let i = 0, len = d.length; i < len; i += (skip + 1)) {
-                const row = d[i];
-                row.label = `${pick(adjectives)} ${pick(nouns)}`;
-                row.color = pick(colours);
-                row.textColor = pick(colours);
-            }
-
+            // const d = data.slice();
+            // for(let i = 0, len = d.length; i < len; i += (skip + 1)) {
+            //     const row = d[i];
+            //     row.label = `${pick(adjectives)} ${pick(nouns)}`;
+            //     row.color = pick(colours);
+            //     row.textColor = pick(colours);
+            // }
             // have to trigger a new one else the reactivity doesn't work
-            setData([]);
-            setData(d);
+            // setData(d);
+
+            setData((items) => items.map((row, i) => (
+              i % (skip + 1) === 0 ? { ...row, label: `${pick(adjectives)} ${pick(nouns)}`, color: pick(colours), textColor: pick(colours) } : row
+          )));
+
+            
         });
     },
     swapRows = () => {
@@ -117,15 +121,13 @@ const Benchmark = () => {
                 resolve({ time });
             });
 
-            const list = data().slice();
-            if (list.length > 998) {
-                let item = list[1];
-                list[1] = list[998];
-                list[998] = item;
-
-                // have to trigger a new one else the reactivity doesn't work
-                setData([]);
-                setData(list);
+            
+            if (data().length > 998) {
+              setData((items) => {
+                  const list = [...items];
+                  [list[1], list[998]] = [list[998], list[1]];
+                return list;
+              });
             }
         });
     },
@@ -136,18 +138,12 @@ const Benchmark = () => {
                 resolve({ time });
             });
 
-            const d = data().slice();
-            const randomIdx = Math.floor(Math.random() * d.length)
-
-            d[randomIdx].x = 100;
-            d[randomIdx].y = 100;
-            d[randomIdx].color = 0xFF0000FF // red;
-            d[randomIdx].width = 1200;
-            d[randomIdx].height = 400;
-            d[randomIdx].fontSize = 100;
-
-            setData([]);
-            setData(d);
+            const randomIdx = Math.floor(Math.random() * data().length)
+            setData(items => {
+              const item = items[randomIdx];
+              items[randomIdx] = { ...item, x: 100, y: 100, color: 0xFF0000FF, width: 1200, height: 400, fontSize: 100};
+              return [...items];
+            });
         });
     },
     removeRow = () => {
@@ -157,9 +153,7 @@ const Benchmark = () => {
                 resolve({ time });
             });
 
-            const d = data().slice();
-            d.pop();
-            setData(d);
+            setData((items) => items.slice(0, -1));
         });
     },
     clearTest = () => {
@@ -232,24 +226,23 @@ const Benchmark = () => {
     console.log('starting benchmark');
     setTimeout(runBenchmark, 1000);
 
-    return (<Show when={data()}>
+    return (<Show when={data().length}>
         <View ref={container}>
-            <For each={ data() }>{ (row) => {
-                return <View x={row.x} y={row.y} width={row.width} height={row.height} color={row.color}>
-                    <Text 
-                        x={5}
-                        y={2}
-                        width={row.width}
-                        height={row.height}
-                        alpha={0.8}
-                        fontFamily={"Ubuntu"}
-                        color={row.textColor}
-                        fontSize={row.fontSize}>
-                        {row.label}
-                    </Text>
-                </View>
-            }}
-            </For>
+          <Index each={data()}>{(row) => (
+                    <View x={row().x} y={row().y} width={row().width} height={row().height} color={row().color}>
+                        <Text 
+                            x={5}
+                            y={2}
+                            width={row().width}
+                            height={row().height}
+                            alpha={0.8}
+                            fontFamily={"Ubuntu"}
+                            color={row().textColor}
+                            fontSize={row().fontSize}>
+                            {row().label}
+                        </Text>
+                    </View>
+                )}</Index>
         </View>
     </Show>
   );
