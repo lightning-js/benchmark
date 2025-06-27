@@ -39,6 +39,7 @@ const options = {
         clearColor: 0x00000000,
         canvas2d: false,
         useImageWorker: true,
+        pauseRafLoopOnIdle: true,
         // bufferSize: 4e6, // WvB tried to raise this to 4M but it didn't work for the 20k items test
     },
     debug: false,
@@ -49,6 +50,29 @@ export class App extends Lightning.Application {
         return {
             Items: {}
         }
+    }
+
+    waitUntilIdle(startTime) {
+        return new Promise( (resolve, reject) => {
+            let timeout = null;
+            let lastTime;
+        
+            const done = () => {
+                clearTimeout(timeout);
+                this.stage.off('idle', rendererIdle);
+                resolve(lastTime);
+            }
+        
+            const rendererIdle = () => {
+                lastTime = performance.now() - startTime;
+                if (timeout) {
+                    clearTimeout(timeout);
+                }
+                setTimeout(done, 200);
+            }
+        
+            this.stage.on('idle', rendererIdle);
+        })
     }
 
     _init() {
@@ -83,76 +107,113 @@ export class App extends Lightning.Application {
         });
     }
 
-    _clear() {
+    _clear(trigger = false) {
         return new Promise( resolve => {
-            const clearPerf = performance.now();
-            this.tag('Items').childList.clear();
+            this.waitUntilIdle(performance.now()).then(time => {
+                if (trigger) {
+                    this.tag('Items').childList.clear();
+                }
 
-            this.stage.once('frameEnd', () => {
-                const time = performance.now() - clearPerf;
                 resolve({ time });
             });
+
+            this.tag('Items').childList.clear();
+
+            const data = {
+                color: pick(colours),
+                textColor: pick(colours),
+                text: `${pick(adjectives)} ${pick(nouns)}`,
+            }
+
+            if (trigger) {
+                this.tag('Items').childList.add({
+                    data,
+                    rect: true, w: 200, h: 40, color: data.color || 0x00000000,
+                    Label: {
+                        x: 5, y: 2,
+                        text: { text: 'Cleared', fontSize: 26, fontFace: 'sans-serif', textColor: data.textColor || 0xFFFFFFFF, wordWrap: false }
+                    }
+                });
+            }
         });
     }
-
     
     clearTest() {
         return new Promise( resolve => {
-            this.createMany(1000).then( () => {
-                this._clear().then( time => {
+            this.createMany(1000, true).then( () => {
+                this._clear(true).then( time => {
                     resolve(time);
                 });
             });
         });
     }
 
-    createMany(amount = 1000) {
+    createMany(amount = 1000, trigger = false) {
         return new Promise( resolve => {
-            this._clear().then(() => {
-                const createPerf = performance.now();
+            this._clear(trigger).then(() => {
+                this.waitUntilIdle(performance.now()).then(time => {
+                    resolve({ time });
+                });
+
                 const items = this.tag('Items');
                 for (let i = 0; i < amount; i++) {
                     this._createRow(items, i);
                 }
-
-                this.stage.once('frameEnd', () => {
-                    const time = performance.now() - createPerf;
-                    resolve({ time });
-                });
-
             });
         })
     }
 
+
     createManyWithoutText(amount = 1000) {
         return new Promise( resolve => {
             this._clear().then(() => {
-                const createPerf = performance.now();
-                const items = this.tag('Items');
-                for (let i = 0; i < amount; i++) {
-                    const color = pick(colours);
-                    const index = i;
-                    const x = index % 216 * 4;
-                    const y  = ~~( index / 216 ) * 4;
-
-                    items.childList.add({
-                        x, y,
-                        rect: true, w: 4, h: 4, color: color || 0xFF000000,
-                    });
-                }
-
-                this.stage.once('frameEnd', () => {
-                    const time = performance.now() - createPerf;
+                this.waitUntilIdle(performance.now()).then(time => {
                     resolve({ time });
                 });
+
+                const items = this.tag('Items');
+                for (let i = 0; i < amount; i++) {
+                    items.childList.add({
+                        type: BlockNoText,
+                        data: {
+                            color: pick(colours),
+                            index: i
+                        }
+                    });
+                }
             });
+        });
+    }
+
+    
+    updateMany(count, skip = 0) {
+        return new Promise( resolve => {
+            this.waitUntilIdle(performance.now()).then(time => {
+                resolve({ time });
+            });
+
+            const items = this.tag('Items');
+            for (let i = 0; i < count; i += (skip + 1)) {
+                const child = items.childList.getAt(i);
+                if (child) {
+                    child.patch({
+                        color: pick(colours),
+                        Label: {
+                            text: { text: `${pick(adjectives)} ${pick(nouns)}`, textColor: pick(colours) },
+                        }
+                    });
+                }
+            }
         });
     }
 
     updateMany(count, skip = 0) {
         return new Promise( resolve => {
-            const updatePerf = performance.now();
             const items = this.tag('Items');
+            this.waitUntilIdle(performance.now()).then(time => {
+                resolve({ time });
+            });
+
             for (let i = 0; i < count; i += (skip + 1)) {
                 const child = items.childList.getAt(i);
                 if (child) {
@@ -169,17 +230,15 @@ export class App extends Lightning.Application {
                     // label.text.textColor = pick(colours);
                 }
             }
-
-            this.stage.once('frameEnd', () => {
-                const time = performance.now() - updatePerf;
-                resolve({ time });
-            });
         });
     }
 
     selectRandomNode() {
         return new Promise( resolve => {
-            const selectPerf = performance.now();
+            this.waitUntilIdle(performance.now()).then(time => {
+                resolve({ time });
+            });
+
             const items = this.tag('Items');
             const index = Math.floor(Math.random() * items.childList.length);
             const child = items.childList.getAt(index);
@@ -197,21 +256,13 @@ export class App extends Lightning.Application {
                     },
                 });
             }
-
-            this.stage.once('frameEnd', () => {
-                const time = performance.now() - selectPerf;
-                resolve({ time });
-            });
-
         });
     }
 
     swapRows() {
         return new Promise( resolve => {
             return this.createMany().then( () => {
-                const swapPerf = performance.now();
-                this.stage.once('frameEnd', () => {
-                    const time = performance.now() - swapPerf;
+                this.waitUntilIdle(performance.now()).then(time => {
                     resolve({ time });
                 });
 
@@ -246,33 +297,27 @@ export class App extends Lightning.Application {
 
     removeRow() {
         return new Promise( resolve => {
-            const removePerf = performance.now();
+            this.waitUntilIdle(performance.now()).then(time => {
+                resolve({ time });
+            });
+
             const items = this.tag('Items');
             const index = Math.floor(Math.random() * items.childList.length);
             items.childList.removeAt(index);
-
-            this.stage.once('frameEnd', () => {
-                const time = performance.now() - removePerf;
-                resolve({ time });
-            });
         });
     }
 
     appendMany(amount = 1000) {
         return new Promise( resolve => {
-            this._clear().then(() => {
-                this.createMany(1000).then(() =>{
-                    const appendPerf = performance.now();
-                    const items = this.tag('Items');
-                    for (let i = 0; i < amount; i++) {
-                        this._createRow(items, i);
-                    }
-
-                    this.stage.once('frameEnd', () => {
-                        const time = performance.now() - appendPerf;
-                        resolve({ time });
-                    });
+            this.createMany(1000).then(() =>{
+                this.waitUntilIdle(performance.now()).then(time => {
+                    resolve({ time });
                 });
+
+                const items = this.tag('Items');
+                for (let i = 0; i < amount; i++) {
+                    this._createRow(items, i);
+                }
             });
         });
     }

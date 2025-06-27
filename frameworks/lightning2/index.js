@@ -38,6 +38,7 @@ const options = {
         clearColor: 0x00000000,
         canvas2d: false,
         useImageWorker: true,
+        pauseRafLoopOnIdle: true,
         // bufferSize: 4e6, // WvB tried to raise this to 4M but it didn't work for the 20k items test
     },
     debug: false,
@@ -99,6 +100,29 @@ export class App extends Lightning.Application {
         }
     }
 
+    waitUntilIdle(startTime) {
+        return new Promise( (resolve, reject) => {
+            let timeout = null;
+            let lastTime;
+        
+            const done = () => {
+                clearTimeout(timeout);
+                this.stage.off('idle', rendererIdle);
+                resolve(lastTime);
+            }
+        
+            const rendererIdle = () => {
+                lastTime = performance.now() - startTime;
+                if (timeout) {
+                    clearTimeout(timeout);
+                }
+                setTimeout(done, 200);
+            }
+        
+            this.stage.on('idle', rendererIdle);
+        })
+    }
+
     _init() {
         // get hash of the url
         const hash = window.location.hash.substring(1);
@@ -122,42 +146,53 @@ export class App extends Lightning.Application {
         });
     }
 
-    _clear() {
+    _clear(trigger = false) {
         return new Promise( resolve => {
-            const clearPerf = performance.now();
-            this.tag('Items').childList.clear();
+            this.waitUntilIdle(performance.now()).then(time => {
+                if (trigger) {
+                    this.tag('Items').childList.clear();
+                }
 
-            this.stage.once('frameEnd', () => {
-                const time = performance.now() - clearPerf;
                 resolve({ time });
             });
+
+            this.tag('Items').childList.clear();
+
+            if (trigger) {
+                this.tag('Items').childList.add({
+                    type: Block,
+                    data: {
+                        color: pick(colours),
+                        textColor: pick(colours),
+                        text: 'Cleared',
+                        index: 0
+                    }
+                });
+            }
         });
     }
 
     clearTest() {
         return new Promise( resolve => {
-            this.createMany(1000).then( () => {
-                this._clear().then( time => {
+            this.createMany(1000, true).then( () => {
+                this._clear(true).then( time => {
                     resolve(time);
                 });
             });
         });
     }
 
-    createMany(amount = 1000) {
+    createMany(amount = 1000, trigger = false) {
         return new Promise( resolve => {
-            this._clear().then(() => {
-                const createPerf = performance.now();
+            this._clear(trigger).then(() => {
+                this.waitUntilIdle(performance.now()).then(time => {
+                    resolve({ time });
+                });
+
                 const items = this.tag('Items');
                 for (let i = 0; i < amount; i++) {
                     this._createRow(items, i);
                 }
-
-                this.stage.once('frameEnd', () => {
-                    const time = performance.now() - createPerf;
-                    resolve({ time });
-                });
-
             });
         })
     }
@@ -165,7 +200,10 @@ export class App extends Lightning.Application {
     createManyWithoutText(amount = 1000) {
         return new Promise( resolve => {
             this._clear().then(() => {
-                const createPerf = performance.now();
+                this.waitUntilIdle(performance.now()).then(time => {
+                    resolve({ time });
+                });
+
                 const items = this.tag('Items');
                 for (let i = 0; i < amount; i++) {
                     items.childList.add({
@@ -176,18 +214,16 @@ export class App extends Lightning.Application {
                         }
                     });
                 }
-
-                this.stage.once('frameEnd', () => {
-                    const time = performance.now() - createPerf;
-                    resolve({ time });
-                });
             });
         });
     }
 
     updateMany(count, skip = 0) {
         return new Promise( resolve => {
-            const updatePerf = performance.now();
+            this.waitUntilIdle(performance.now()).then(time => {
+                resolve({ time });
+            });
+
             const items = this.tag('Items');
             for (let i = 0; i < count; i += (skip + 1)) {
                 const child = items.childList.getAt(i);
@@ -200,17 +236,15 @@ export class App extends Lightning.Application {
                     });
                 }
             }
-
-            this.stage.once('frameEnd', () => {
-                const time = performance.now() - updatePerf;
-                resolve({ time });
-            });
         });
     }
 
     selectRandomNode() {
         return new Promise( resolve => {
-            const selectPerf = performance.now();
+            this.waitUntilIdle(performance.now()).then(time => {
+                resolve({ time });
+            });
+
             const index = Math.floor(Math.random() * this.tag('Items').childList.length);
             const child = this.tag('Items').childList.getAt(index);
             const text = child.data.text;
@@ -231,21 +265,13 @@ export class App extends Lightning.Application {
                     text: { fontSize: 128, textColor: 0xFF000000 }
                 });
             }
-
-            this.stage.once('frameEnd', () => {
-                const time = performance.now() - selectPerf;
-                resolve({ time });
-            });
-
         });
     }
 
     swapRows() {
         return new Promise( resolve => {
             return this.createMany().then( () => {
-                const swapPerf = performance.now();
-                this.stage.once('frameEnd', () => {
-                    const time = performance.now() - swapPerf;
+                this.waitUntilIdle(performance.now()).then(time => {
                     resolve({ time });
                 });
 
@@ -279,33 +305,26 @@ export class App extends Lightning.Application {
 
     removeRow() {
         return new Promise( resolve => {
-            const removePerf = performance.now();
-            const index = Math.floor(Math.random() * this.tag('Items').childList.length);
-            this.tag('Items').childList.removeAt(index);
-
-            this.stage.once('frameEnd', () => {
-                const time = performance.now() - removePerf;
+            this.waitUntilIdle(performance.now()).then(time => {
                 resolve({ time });
             });
+
+            const index = Math.floor(Math.random() * this.tag('Items').childList.length);
+            this.tag('Items').childList.removeAt(index);
         });
     }
 
     appendMany(amount = 1000) {
         return new Promise( resolve => {
-            this._clear().then(() => {
-                this.createMany(1000).then(() =>{
-                    const appendPerf = performance.now();
-                    const items = this.tag('Items')
-                    for (let i = 0; i < amount; i++) {
-                        this._createRow(items, i);
-                    }
-        
-                    this.stage.once('frameEnd', () => {
-                        const time = performance.now() - appendPerf;
-                        resolve({ time });
-                    });
-
+            this.createMany(1000).then(() =>{
+                this.waitUntilIdle(performance.now()).then(time => {
+                    resolve({ time });
                 });
+
+                const items = this.tag('Items')
+                for (let i = 0; i < amount; i++) {
+                    this._createRow(items, i);
+                }
             });
         });
     }
