@@ -13,8 +13,8 @@
   "license": "MIT",
   "description": "",
   "dependencies": {
-    "@lightningtv/solid": "^2.7.0",
-    "@lightningjs/renderer": "^2.13.0",
+    "@lightningtv/solid": "^2.8.1",
+    "@lightningjs/renderer": "^2.14.3",
     "@solidjs/router": "^0.15.1",
     "solid-js": "^1.8.17"
   },
