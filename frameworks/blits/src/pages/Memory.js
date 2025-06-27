@@ -42,7 +42,7 @@ export default Blits.Component('Memory', {
     },
     async testCreateManyWithoutText() {
       const createRes = await createManyWithoutText.call(this, 20000)
-      results.create = createRes.time.toFixed(2) + 'ms'
+      results.create = createRes.time.toFixed(2)
     },
   },
 })

@@ -78,10 +78,10 @@ export default Blits.Component('Benchmark', {
     },
     async testUpdateMany() {
       await createMany.call(this, 1000)
-      await warmup(updateMany.bind(this), 5)
+      await warmup(updateMany.bind(this), 0, 5)
       await createMany.call(this, 1000)
 
-      const { average: updateAvg, spread: updateSpread } = await run(updateMany.bind(this), 5)
+      const { average: updateAvg, spread: updateSpread } = await run(updateMany.bind(this), 0, 5)
       results.update = `${updateAvg.toFixed(2)}ms ±${updateSpread.toFixed(2)}`
     },
     async testSkipNth() {
