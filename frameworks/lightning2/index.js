@@ -316,17 +316,15 @@ export class App extends Lightning.Application {
 
     appendMany(amount = 1000) {
         return new Promise( resolve => {
-            this._clear().then(() => {
-                this.createMany(1000).then(() =>{
-                    this.waitUntilIdle(performance.now()).then(time => {
-                        resolve({ time });
-                    });
-
-                    const items = this.tag('Items')
-                    for (let i = 0; i < amount; i++) {
-                        this._createRow(items, i);
-                    }
+            this.createMany(1000).then(() =>{
+                this.waitUntilIdle(performance.now()).then(time => {
+                    resolve({ time });
                 });
+
+                const items = this.tag('Items')
+                for (let i = 0; i < amount; i++) {
+                    this._createRow(items, i);
+                }
             });
         });
     }

@@ -119,11 +119,15 @@ export class App extends Lightning.Application {
 
             this.tag('Items').childList.clear();
 
+            const data = {
+                color: pick(colours),
+                textColor: pick(colours),
+                text: `${pick(adjectives)} ${pick(nouns)}`,
+            }
+
             if (trigger) {
                 this.tag('Items').childList.add({
-                    color: pick(colours),
-                    textColor: pick(colours),
-                    text: `${pick(adjectives)} ${pick(nouns)}`,
+                    data,
                     rect: true, w: 200, h: 40, color: data.color || 0x00000000,
                     Label: {
                         x: 5, y: 2,
@@ -305,17 +309,15 @@ export class App extends Lightning.Application {
 
     appendMany(amount = 1000) {
         return new Promise( resolve => {
-            this._clear().then(() => {
-                this.createMany(1000).then(() =>{
-                    this.waitUntilIdle(performance.now()).then(time => {
-                        resolve({ time });
-                    });
-
-                    const items = this.tag('Items');
-                    for (let i = 0; i < amount; i++) {
-                        this._createRow(items, i);
-                    }
+            this.createMany(1000).then(() =>{
+                this.waitUntilIdle(performance.now()).then(time => {
+                    resolve({ time });
                 });
+
+                const items = this.tag('Items');
+                for (let i = 0; i < amount; i++) {
+                    this._createRow(items, i);
+                }
             });
         });
     }
