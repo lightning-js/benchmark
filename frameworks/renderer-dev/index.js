@@ -17,8 +17,7 @@
 
 
 import { RendererMain } from '@lightningjs/renderer';
-import { WebGlCoreRenderer } from '@lightningjs/renderer/webgl';
-import { CanvasTextRenderer } from '@lightningjs/renderer/canvas';
+import { WebGlCoreRenderer, SdfTextRenderer } from '@lightningjs/renderer/webgl';
 
 import { colours, adjectives, nouns } from '../../shared/data.js';
 import { warmup } from '../../shared/utils/warmup.js';
@@ -34,15 +33,28 @@ const renderer = new RendererMain({
     clearColor: 0x00000000,
     numImageWorkers: 1,
     renderEngine: WebGlCoreRenderer,
-    fontEngines: [ CanvasTextRenderer ],
-    textureProcessingTimeLimit: 1000
-
+    fontEngines: [ SdfTextRenderer ]
 }, 'app');
 
 let rootNode = renderer.createNode({
   color: 0,
   parent: renderer.root,
 });
+
+await renderer.stage.loadFont('sdf', {
+    fontFamily: 'Ubuntu',
+    descriptors: {},
+    atlasUrl: './fonts/Ubuntu-Bold.msdf.png',
+    atlasDataUrl: './fonts/Ubuntu-Bold.msdf.json',
+    metrics: {
+        ascender: 850,
+        descender: -250,
+        lineGap: 60,
+        unitsPerEm: 1000,
+    },
+})
+
+console.log('Font loaded');
 
 const pick = dict => dict[Math.round(Math.random() * 1000) % dict.length];
 
@@ -70,7 +82,7 @@ const createRow = (parent, config = {}) => {
         parent: holder,
         text: text,
         alpha: 0.8,
-        fontFamily: 'sans-serif',
+        fontFamily: 'Ubuntu',
         color: textColor || 0xFFFFFFFF,
         fontSize: 26,
     });
@@ -274,8 +286,8 @@ const createMemoryBenchmark = async () => {
 const runBenchmark = async () => {
     const results = {};
 
-    // createMany(1000);
     await warmup(createMany, 1000, 5);
+    // createMany(1000)
     const { average: createAvg, spread: createSpread } = await run(createMany, 1000, 5);
     results.create = `${createAvg.toFixed(2)}ms ±${createSpread.toFixed(2)}`;
 

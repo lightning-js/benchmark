@@ -35,8 +35,7 @@ const renderer = new RendererMain({
     numImageWorkers: 1,
     renderEngine: WebGlCoreRenderer,
     fontEngines: [ CanvasTextRenderer ],
-    textureProcessingTimeLimit: 1000
-
+    textureProcessingTimeLimit: 1000,
 }, 'app');
 
 let rootNode = renderer.createNode({

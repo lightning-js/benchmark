@@ -1,0 +1,21 @@
+{
+  "name": "lightningjs-benchmark-renderer",
+  "version": "0.0.1",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "dist": "vite build --mode production"
+  },
+  "author": "",
+  "type": "module",
+  "license": "MIT",
+  "description": "",
+  "dependencies": {
+    "@lightningjs/renderer": "file:../../../renderer"
+  },
+  "devDependencies": {
+    "vite": "^4.5.0",
+    "vite-plugin-static-copy": "^0.17.1"
+  }
+}
