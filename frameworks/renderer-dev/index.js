@@ -201,7 +201,14 @@ const swapRows = () => {
         const a = rootNode.children[998];
         const b = rootNode.children[1];
      
-        const temp = a;
+        const temp = {
+            x: a.x,
+            y: a.y,
+            color: a.color,
+            childColor: a.children[0].color,
+            childText: a.children[0].text
+        };
+        
         a.y = b.y;
         a.x = b.x;
         a.color = b.color;
@@ -211,8 +218,8 @@ const swapRows = () => {
         b.y = temp.y;
         b.x = temp.x;
         b.color = temp.color;
-        b.children[0].color = temp.children[0].color;
-        b.children[0].text = temp.children[0].text;
+        b.children[0].color = temp.childColor;
+        b.children[0].text = temp.childText;
     });
 }
 
@@ -287,51 +294,50 @@ const runBenchmark = async () => {
     const results = {};
 
     await warmup(createMany, 1000, 5);
-    // createMany(1000)
     const { average: createAvg, spread: createSpread } = await run(createMany, 1000, 5);
     results.create = `${createAvg.toFixed(2)}ms ±${createSpread.toFixed(2)}`;
 
-    // await createMany(1000);
-    // await warmup(updateMany, 1000, 5);
-    // await createMany(1000);
-    // const { average: updateAvg, spread: updateSpread } = await run(updateMany, 1000, 5);
-    // results.update = `${updateAvg.toFixed(2)}ms ±${updateSpread.toFixed(2)}`;
+    await createMany(1000);
+    await warmup(updateMany, 1000, 5);
+    await createMany(1000);
+    const { average: updateAvg, spread: updateSpread } = await run(updateMany, 1000, 5);
+    results.update = `${updateAvg.toFixed(2)}ms ±${updateSpread.toFixed(2)}`;
 
-    // await createMany(1000);
-    // await warmup(updateMany, [1000, 10], 5);
-    // await createMany(1000);
-    // const { average: skipNthAvg, spread: skipNthSpread } = await run(updateMany, [1000, 10], 5);
-    // results.skipNth = `${skipNthAvg.toFixed(2)}ms ±${skipNthSpread.toFixed(2)}`;
+    await createMany(1000);
+    await warmup(updateMany, [1000, 10], 5);
+    await createMany(1000);
+    const { average: skipNthAvg, spread: skipNthSpread } = await run(updateMany, [1000, 10], 5);
+    results.skipNth = `${skipNthAvg.toFixed(2)}ms ±${skipNthSpread.toFixed(2)}`;
 
-    // await createMany(1000);
-    // await warmup(selectRandomNode, undefined, 5);
-    // await createMany(1000);
-    // const { average: selectAvg, spread: selectSpread } = await run(selectRandomNode, undefined, 5);
-    // results.select = `${selectAvg.toFixed(2)}ms ±${selectSpread.toFixed(2)}`;
+    await createMany(1000);
+    await warmup(selectRandomNode, undefined, 5);
+    await createMany(1000);
+    const { average: selectAvg, spread: selectSpread } = await run(selectRandomNode, undefined, 5);
+    results.select = `${selectAvg.toFixed(2)}ms ±${selectSpread.toFixed(2)}`;
 
-    // await createMany(1000);
-    // await warmup(swapRows, undefined, 5);
-    // await createMany(1000);
-    // const { average: swapAvg, spread: swapSpread } = await run(swapRows, undefined, 5);
-    // results.swap = `${swapAvg.toFixed(2)}ms ±${swapSpread.toFixed(2)}`;
+    await createMany(1000);
+    await warmup(swapRows, undefined, 5);
+    await createMany(1000);
+    const { average: swapAvg, spread: swapSpread } = await run(swapRows, undefined, 5);
+    results.swap = `${swapAvg.toFixed(2)}ms ±${swapSpread.toFixed(2)}`;
 
-    // await createMany(1000);
-    // await warmup(removeRow, undefined, 5);
-    // await createMany(1000);
-    // const { average: removeAvg, spread: removeSpread } = await run(removeRow, undefined, 5);
-    // results.remove = `${removeAvg.toFixed(2)}ms ±${removeSpread.toFixed(2)}`;
+    await createMany(1000);
+    await warmup(removeRow, undefined, 5);
+    await createMany(1000);
+    const { average: removeAvg, spread: removeSpread } = await run(removeRow, undefined, 5);
+    results.remove = `${removeAvg.toFixed(2)}ms ±${removeSpread.toFixed(2)}`;
 
-    // await warmup(createMany, 10000, 5);
-    // const { average: createLotsAvg, spread: createLotsSpread } = await run(createMany, 10000, 5);
-    // results.createLots = `${createLotsAvg.toFixed(2)}ms ±${createLotsSpread.toFixed(2)}`;
+    await warmup(createMany, 10000, 5);
+    const { average: createLotsAvg, spread: createLotsSpread } = await run(createMany, 10000, 5);
+    results.createLots = `${createLotsAvg.toFixed(2)}ms ±${createLotsSpread.toFixed(2)}`;
 
-    // await warmup(appendMany, 1000, 5);
-    // const { average: appendAvg, spread: appendSpread } = await run(appendMany, 10000, 5);
-    // results.append = `${appendAvg.toFixed(2)}ms ±${appendSpread.toFixed(2)}`;
+    await warmup(appendMany, 1000, 5);
+    const { average: appendAvg, spread: appendSpread } = await run(appendMany, 10000, 5);
+    results.append = `${appendAvg.toFixed(2)}ms ±${appendSpread.toFixed(2)}`;
 
-    // await warmup(clearTest, 1000, 5);
-    // const { average: clearAvg, spread: clearSpread } = await run(clearTest, 10000, 5);
-    // results.clear = `${clearAvg.toFixed(2)}ms ±${clearSpread.toFixed(2)}`;
+    await warmup(clearTest, 1000, 5);
+    const { average: clearAvg, spread: clearSpread } = await run(clearTest, 10000, 5);
+    results.clear = `${clearAvg.toFixed(2)}ms ±${clearSpread.toFixed(2)}`;
 
     Object.keys(results).forEach(key => {
         console.log(`${key}: ${results[key]}`);
