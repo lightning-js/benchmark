@@ -16,7 +16,7 @@
  */
 
 
-import { RendererMain, SdfTrFontFace } from '@lightningjs/renderer';
+import { RendererMain } from '@lightningjs/renderer';
 import { WebGlCoreRenderer, SdfTextRenderer } from '@lightningjs/renderer/webgl';
 
 import { colours, adjectives, nouns } from '../../shared/data.js';
@@ -202,7 +202,14 @@ const swapRows = () => {
         const a = rootNode.children[998];
         const b = rootNode.children[1];
      
-        const temp = a;
+        const temp = {
+            x: a.x,
+            y: a.y,
+            color: a.color,
+            childColor: a.children[0].color,
+            childText: a.children[0].text
+        };
+        
         a.y = b.y;
         a.x = b.x;
         a.color = b.color;
@@ -212,8 +219,8 @@ const swapRows = () => {
         b.y = temp.y;
         b.x = temp.x;
         b.color = temp.color;
-        b.children[0].color = temp.children[0].color;
-        b.children[0].text = temp.children[0].text;
+        b.children[0].color = temp.childColor;
+        b.children[0].text = temp.childText;
     });
 }
 
