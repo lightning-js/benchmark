@@ -31,6 +31,7 @@ const { root, createElement, createText, signals, loadFont } = renderer({
     height: canvas.height,
     uploadBudgetMs: 1000,
     maxTextureCount: 4096,
+    maxPoolSize: 20000
   }
 });
 

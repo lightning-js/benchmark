@@ -40,7 +40,7 @@ const renderer = new RendererMain({
     textureMemory: {
         criticalThreshold: 0,
     },
-    textureProcessingTimeLimit: 0,
+    textureProcessingTimeLimit: 2000,
 }, 'app');
 
 let rootNode = renderer.createNode({
