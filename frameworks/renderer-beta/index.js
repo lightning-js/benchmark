@@ -41,21 +41,17 @@ let rootNode = renderer.createNode({
   parent: renderer.root,
 });
 
-renderer.stage.fontManager.addFontFace(
-    new SdfTrFontFace('msdf', {
-        fontFamily: 'Ubuntu',
-        descriptors: {},
-        atlasUrl: './fonts/Ubuntu-Bold.msdf.png',
-        atlasDataUrl: './fonts/Ubuntu-Bold.msdf.json',
-        stage: renderer.stage,
-        metrics: {
-            ascender: 850,
-            descender: -250,
-            lineGap: 60,
-            unitsPerEm: 1000,
-        },
-    })
-);
+await renderer.stage.loadFont('sdf', {
+    fontFamily: 'Ubuntu',
+    atlasUrl: './fonts/Ubuntu-Bold.msdf.png',
+    atlasDataUrl: './fonts/Ubuntu-Bold.msdf.json',
+    metrics: {
+        ascender: 850,
+        descender: -250,
+        lineGap: 60,
+        unitsPerEm: 1000,
+    },
+})
 
 const pick = dict => dict[Math.round(Math.random() * 1000) % dict.length];
 
@@ -68,8 +64,8 @@ const createRow = (parent, config = {}) => {
     const nodeProps = {
         x: x,
         y: y,
-        width: 200,
-        height: 40,
+        w: 200,
+        h: 40,
         color: color || 0x00000000,
         parent: parent || rootNode
     }
@@ -78,8 +74,8 @@ const createRow = (parent, config = {}) => {
     renderer.createTextNode({
         x: 5,
         y: 2,
-        width: 200,
-        height: 40,
+        w: 200,
+        h: 40,
         parent: holder,
         text: text,
         alpha: 0.8,
@@ -98,8 +94,8 @@ const createRowWithoutText = (parent, config = {}) => {
     const node = renderer.createNode({
         x: x,
         y: y,
-        width: 4,
-        height: 4,
+        w: 4,
+        h: 4,
         color: color || 0x00000000,
         parent: parent || rootNode,
     });
@@ -236,8 +232,8 @@ const selectRandomNode = () => {
         randomNode.x = 100;
         randomNode.y = 100;
         randomNode.color = 0xFF0000FF; //red
-        randomNode.width = 1200;
-        randomNode.height = 400;
+        randomNode.w = 1200;
+        randomNode.h = 400;
         randomNode.zIndex = 1000;
 
         const textNode = randomNode.children[0];
