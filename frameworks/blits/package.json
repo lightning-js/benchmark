@@ -32,6 +32,6 @@
     "vite": "^5.0.0"
   },
   "dependencies": {
-    "@lightningjs/blits": "^1.49.0"
+    "@lightningjs/blits": "^1.51.0"
   }
 }
