@@ -36,8 +36,8 @@ const { root, createElement, createText, signals, loadFont } = renderer({
 
 const { fontData, atlasTexture } = await loadFont('bitmap', {
   family: 'ArialBMF',
-  json: '/fonts/arial.json',
-  image: '/fonts/arial.png'
+  json: './fonts/arial.json',
+  image: './fonts/arial.png'
 })
 
 const colours = [
