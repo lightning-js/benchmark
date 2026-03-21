@@ -16,5 +16,6 @@
   "20260228 Blits 1.49.0 Renderer 2.23.0 Chromium 145.0.7632.6": "20260228_results_Chromium 145.0.7632.6_linux_6.18.9-arch1-2_x64.html",
   "20260312 Blits 1.51.0 Renderer 2.23.0 Chromium 145.0.7632.6": "20260312_results_Chromium 145.0.7632.6_darwin_25.3.0_arm64.html",
   "20260313 Blits 1.51.0 Renderer 2.23.0 Chromium 145.0.7632.6": "20260313_results_Chromium 145.0.7632.6_linux_6.19.6-arch1-1_x64.html",
-  "20260320 Blits 1.51.0 Renderer 2.23.0 Chromium 145.0.7632.6": "20260320_results_Chromium 145.0.7632.6_darwin_25.3.0_arm64.html"
+  "20260320 Blits 1.51.0 Renderer 2.23.0 Chromium 145.0.7632.6": "20260320_results_Chromium 145.0.7632.6_darwin_25.3.0_arm64.html",
+  "20260321 Blits 2.0.0 Renderer 3.0.0 Chromium 145.0.7632.6": "20260321_results_Chromium 145.0.7632.6_darwin_25.3.0_arm64.html"
 }

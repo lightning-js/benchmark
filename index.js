@@ -81,8 +81,21 @@ const lookupFrameworkVersion = (dir) => {
         return '';
     }
 
-    // grab the version
-    return packageLock.packages[dependencyString].version;
+    const packageInfo = packageLock.packages[dependencyString];
+
+    // check if it's a linked dependency (local file)
+    if (packageInfo.link && packageInfo.resolved) {
+        // for linked packages, read the version from the linked package.json
+        const linkedPath = `./frameworks/${dir}/${packageInfo.resolved}/package.json`;
+        if (fs.existsSync(linkedPath)) {
+            const linkedPackageJson = JSON.parse(fs.readFileSync(linkedPath, 'utf8'));
+            return linkedPackageJson.version || '';
+        }
+        return '';
+    }
+
+    // grab the version for npm packages
+    return packageInfo.version || '';
 }
 
 /**

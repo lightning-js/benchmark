@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Lightning JS Framework benchmark</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 0;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            th, td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+            th {
+                background-color: #f2f2f2;
+            }
+            h2 {
+                margin: 0;
+            }
+            p {
+                margin: 0;
+            }
+            div {
+                padding: 10px;
+            }
+            span {
+                font-weight: bold;
+            }
+        </style>
+    </head>
+    <body><div>
+    <h2>Results for Lightning JS Framework benchmark</h2>
+    <p>The benchmark was run on <span>darwin 25.3.0 arm64</span> on a <span>Apple M3 Max 14 and 36.00 GB memory</span></p>
+    <p>Tests where executed on browser version: <span id="browserVersion">Chromium 145.0.7632.6</span> using PlayWright</p>
+</div><div>
+    <h2>Results</h2>
+    <p>Tests are run by executing an operation and waiting for the WebGL rennder to be Idle</p>
+    <p>Results are the time in milliseconds to execute the operation</p>
+    <p>All operations are executed on 6x CPU slowdown</p>
+</div><table>
+    <thead>
+        <tr>
+            <th>
+                <b>Name</b>
+                <br>
+                Duration for...
+            </th>
+            <th>ftl 0.0.1</th><th>renderer 3.0.0</th><th>renderer-v2 2.23.0</th><th>blits 2.0.0</th><th>blits-v1 1.51.0</th><th>lightning2 2.20.1</th><th>lightning2-core 2.20.1</th><th>ftl-canvas 0.0.1</th><th>renderer-canvasfonts-v2 2.23.0</th><th>renderer-canvasfonts 3.0.0</th>
+        </tr>
+
+    </thead>
+    <tbody>
+        <tr>
+            <th>
+                <b>create rows</b>
+                <div>creating 1,000 nodes. (5 warmup runs)</div>
+            </th>
+            <td style="background-color: rgb(99, 191, 124); color: rgb(0, 0, 0);">22.94ms ±2.10 (1.00)</td><td style="background-color: rgb(195, 219, 129); color: rgb(0, 0, 0);">48.46ms ±16.50 (1.61)</td><td style="background-color: rgb(182, 215, 128); color: rgb(0, 0, 0);">44.54ms ±20.70 (1.53)</td><td style="background-color: rgb(229, 229, 131); color: rgb(0, 0, 0);">59.20ms ±10.70 (1.83)</td><td style="background-color: rgb(207, 222, 130); color: rgb(0, 0, 0);">52.06ms ±11.00 (1.69)</td><td style="background-color: rgb(249, 105, 108); color: rgb(0, 0, 0);">224.26ms ±186.50 (4.30)</td><td style="background-color: rgb(249, 105, 108); color: rgb(0, 0, 0);">228.16ms ±179.60 (4.35)</td><td style="background-color: rgb(249, 105, 108); color: rgb(0, 0, 0);">510.32ms ±30.30 (7.28)</td><td style="background-color: rgb(249, 105, 108); color: rgb(0, 0, 0);">347.24ms ±20.40 (5.69)</td><td style="background-color: rgb(249, 105, 108); color: rgb(0, 0, 0);">703.46ms ±324.70 (8.94)</td>
+        </tr>
+        <tr>
+            <th>
+                <b>replace all rows</b>
+                <div>updating all 1,000 nodes. (5 warmup runs)</div>
+            </th>
+            <td style="background-color: rgb(99, 191, 124); color: rgb(0, 0, 0);">20.28ms ±3.60 (1.00)</td><td style="background-color: rgb(173, 212, 128); color: rgb(0, 0, 0);">40.50ms ±1.70 (1.47)</td><td style="background-color: rgb(110, 194, 125); color: rgb(0, 0, 0);">22.90ms ±4.20 (1.07)</td><td style="background-color: rgb(221, 226, 130); color: rgb(0, 0, 0);">56.84ms ±8.90 (1.78)</td><td style="background-color: rgb(170, 212, 128); color: rgb(0, 0, 0);">39.66ms ±3.40 (1.46)</td><td style="background-color: rgb(249, 105, 108); color: rgb(0, 0, 0);">602.06ms ±239.10 (6.68)</td><td style="background-color: rgb(249, 105, 108); color: rgb(0, 0, 0);">619.54ms ±187.80 (6.79)</td><td style="background-color: rgb(249, 105, 108); color: rgb(0, 0, 0);">469.36ms ±22.00 (5.81)</td><td style="background-color: rgb(249, 105, 108); color: rgb(0, 0, 0);">324.32ms ±14.20 (4.72)</td><td style="background-color: rgb(249, 105, 108); color: rgb(0, 0, 0);">618.08ms ±25.00 (6.78)</td>
+        </tr>
+        <tr>
+            <th>
+                <b>partial update rows</b>
+                <div>updating every 10th node for 1,000 nodes. (5 warmup runs)</div>
+            </th>
+            <td style="background-color: rgb(99, 191, 124); color: rgb(0, 0, 0);">10.06ms ±2.70 (1.00)</td><td style="background-color: rgb(233, 230, 131); color: rgb(0, 0, 0);">30.46ms ±19.90 (1.86)</td><td style="background-color: rgb(181, 215, 128); color: rgb(0, 0, 0);">21.36ms ±21.70 (1.52)</td><td style="background-color: rgb(255, 235, 132); color: rgb(0, 0, 0);">35.32ms ±15.30 (2.02)</td><td style="background-color: rgb(180, 214, 128); color: rgb(0, 0, 0);">21.20ms ±6.80 (1.52)</td><td style="background-color: rgb(251, 159, 118); color: rgb(0, 0, 0);">79.18ms ±11.10 (3.18)</td><td style="background-color: rgb(252, 163, 119); color: rgb(0, 0, 0);">76.34ms ±14.80 (3.11)</td><td style="background-color: rgb(250, 126, 112); color: rgb(0, 0, 0);">103.28ms ±7.70 (3.68)</td><td style="background-color: rgb(252, 170, 120); color: rgb(0, 0, 0);">71.74ms ±16.40 (3.00)</td><td style="background-color: rgb(250, 117, 110); color: rgb(0, 0, 0);">110.24ms ±27.40 (3.82)</td>
+        </tr>
+        <tr>
+            <th>
+                <b>select row</b>
+                <div>selecting a node at random. (5 warmup runs)</div>
+            </th>
+            <td style="background-color: rgb(99, 191, 124); color: rgb(0, 0, 0);">9.36ms ±3.00 (1.00)</td><td style="background-color: rgb(125, 198, 125); color: rgb(0, 0, 0);">20.94ms ±8.80 (1.17)</td><td style="background-color: rgb(114, 195, 125); color: rgb(0, 0, 0);">15.20ms ±12.50 (1.10)</td><td style="background-color: rgb(133, 201, 126); color: rgb(0, 0, 0);">26.40ms ±7.00 (1.22)</td><td style="background-color: rgb(136, 202, 126); color: rgb(0, 0, 0);">28.64ms ±25.10 (1.24)</td><td style="background-color: rgb(148, 205, 126); color: rgb(0, 0, 0);">38.96ms ±3.80 (1.31)</td><td style="background-color: rgb(149, 205, 127); color: rgb(0, 0, 0);">40.04ms ±5.70 (1.32)</td><td style="background-color: rgb(169, 211, 128); color: rgb(0, 0, 0);">65.22ms ±4.70 (1.45)</td><td style="background-color: rgb(164, 210, 127); color: rgb(0, 0, 0);">58.76ms ±51.40 (1.42)</td><td style="background-color: rgb(141, 203, 126); color: rgb(0, 0, 0);">32.68ms ±11.10 (1.27)</td>
+        </tr>
+        <tr>
+            <th>
+                <b>swap rows</b>
+                <div>swapping 2 nodes. (5 warmup runs)</div>
+            </th>
+            <td style="background-color: rgb(99, 191, 124); color: rgb(0, 0, 0);">9.20ms ±1.80 (1.00)</td><td style="background-color: rgb(126, 199, 125); color: rgb(0, 0, 0);">31.98ms ±22.60 (1.18)</td><td style="background-color: rgb(115, 196, 125); color: rgb(0, 0, 0);">19.64ms ±24.00 (1.10)</td><td style="background-color: rgb(126, 199, 125); color: rgb(0, 0, 0);">31.58ms ±13.40 (1.17)</td><td style="background-color: rgb(121, 197, 125); color: rgb(0, 0, 0);">24.92ms ±16.40 (1.14)</td><td style="background-color: rgb(130, 200, 126); color: rgb(0, 0, 0);">36.66ms ±2.20 (1.20)</td><td style="background-color: rgb(130, 200, 126); color: rgb(0, 0, 0);">37.68ms ±5.10 (1.20)</td><td style="background-color: rgb(116, 196, 125); color: rgb(0, 0, 0);">20.36ms ±54.70 (1.11)</td><td style="background-color: rgb(124, 198, 125); color: rgb(0, 0, 0);">29.18ms ±26.40 (1.16)</td><td style="background-color: rgb(127, 199, 125); color: rgb(0, 0, 0);">33.14ms ±21.50 (1.18)</td>
+        </tr>
+        <tr>
+            <th>
+                <b>remove row</b>
+                <div>removing a node. (5 warmup runs)</div>
+            </th>
+            <td style="background-color: rgb(100, 191, 124); color: rgb(0, 0, 0);">9.48ms ±2.40 (1.01)</td><td style="background-color: rgb(192, 218, 129); color: rgb(0, 0, 0);">22.74ms ±15.10 (1.60)</td><td style="background-color: rgb(163, 210, 127); color: rgb(0, 0, 0);">17.98ms ±24.80 (1.41)</td><td style="background-color: rgb(197, 219, 129); color: rgb(0, 0, 0);">23.48ms ±10.80 (1.63)</td><td style="background-color: rgb(193, 218, 129); color: rgb(0, 0, 0);">22.80ms ±8.70 (1.60)</td><td style="background-color: rgb(255, 235, 132); color: rgb(0, 0, 0);">35.36ms ±2.70 (2.02)</td><td style="background-color: rgb(255, 233, 131); color: rgb(0, 0, 0);">36.18ms ±8.10 (2.05)</td><td style="background-color: rgb(99, 191, 124); color: rgb(0, 0, 0);">9.38ms ±1.40 (1.00)</td><td style="background-color: rgb(192, 218, 129); color: rgb(0, 0, 0);">22.58ms ±14.60 (1.59)</td><td style="background-color: rgb(207, 222, 130); color: rgb(0, 0, 0);">25.38ms ±13.30 (1.69)</td>
+        </tr>
+        <tr>
+            <th>
+                <b>create many rows</b>
+                <div>creating 10,000 nodes. (5 warmup runs)</div>
+            </th>
+            <td style="background-color: rgb(99, 191, 124); color: rgb(0, 0, 0);">88.46ms ±10.90 (1.00)</td><td style="background-color: rgb(127, 199, 125); color: rgb(0, 0, 0);">118.70ms ±9.70 (1.18)</td><td style="background-color: rgb(230, 229, 131); color: rgb(0, 0, 0);">262.26ms ±24.70 (1.84)</td><td style="background-color: rgb(239, 231, 131); color: rgb(0, 0, 0);">277.32ms ±46.80 (1.90)</td><td style="background-color: rgb(254, 212, 128); color: rgb(0, 0, 0);">410.36ms ±76.50 (2.36)</td><td style="background-color: rgb(148, 205, 126); color: rgb(0, 0, 0);">143.62ms ±52.80 (1.31)</td><td style="background-color: rgb(173, 212, 128); color: rgb(0, 0, 0);">176.56ms ±17.90 (1.47)</td><td style="background-color: rgb(251, 138, 114); color: rgb(0, 0, 0);">824.28ms ±85.40 (3.49)</td><td style="background-color: rgb(249, 112, 109); color: rgb(0, 0, 0);">1001.60ms ±233.50 (3.89)</td><td style="background-color: rgb(251, 147, 116); color: rgb(0, 0, 0);">772.18ms ±150.00 (3.36)</td>
+        </tr>
+        <tr>
+            <th>
+                <b>append rows</b>
+                <div>appending 1,000 nodes to 1,000 nodes. (5 warmup runs)</div>
+            </th>
+            <td style="background-color: rgb(99, 191, 124); color: rgb(0, 0, 0);">16.28ms ±1.20 (1.00)</td><td style="background-color: rgb(251, 142, 115); color: rgb(0, 0, 0);">153.06ms ±47.40 (3.43)</td><td style="background-color: rgb(249, 105, 108); color: rgb(0, 0, 0);">300.66ms ±43.50 (4.97)</td><td style="background-color: rgb(249, 105, 108); color: rgb(0, 0, 0);">328.58ms ±52.00 (5.22)</td><td style="background-color: rgb(249, 105, 108); color: rgb(0, 0, 0);">431.12ms ±88.10 (6.06)</td><td style="background-color: rgb(251, 155, 117); color: rgb(0, 0, 0);">137.98ms ±12.90 (3.24)</td><td style="background-color: rgb(250, 120, 111); color: rgb(0, 0, 0);">182.32ms ±40.70 (3.78)</td><td style="background-color: rgb(197, 219, 129); color: rgb(0, 0, 0);">39.42ms ±10.20 (1.63)</td><td style="background-color: rgb(249, 105, 108); color: rgb(0, 0, 0);">965.84ms ±163.40 (9.45)</td><td style="background-color: rgb(249, 105, 108); color: rgb(0, 0, 0);">936.52ms ±215.90 (9.29)</td>
+        </tr>
+        <tr>
+            <th>
+                <b>clear rows</b>
+                <div>removing all nodes. (5 warmup runs)</div>
+            </th>
+            <td style="background-color: rgb(99, 191, 124); color: rgb(0, 0, 0);">7.30ms ±1.00 (1.00)</td><td style="background-color: rgb(203, 221, 129); color: rgb(0, 0, 0);">24.62ms ±23.40 (1.67)</td><td style="background-color: rgb(134, 201, 126); color: rgb(0, 0, 0);">11.80ms ±20.30 (1.22)</td><td style="background-color: rgb(176, 213, 128); color: rgb(0, 0, 0);">19.04ms ±22.10 (1.50)</td><td style="background-color: rgb(129, 200, 126); color: rgb(0, 0, 0);">11.14ms ±18.30 (1.19)</td><td style="background-color: rgb(238, 231, 131); color: rgb(0, 0, 0);">33.20ms ±5.30 (1.89)</td><td style="background-color: rgb(236, 231, 131); color: rgb(0, 0, 0);">32.86ms ±4.00 (1.88)</td><td style="background-color: rgb(123, 198, 125); color: rgb(0, 0, 0);">10.26ms ±4.10 (1.15)</td><td style="background-color: rgb(168, 211, 128); color: rgb(0, 0, 0);">17.54ms ±8.20 (1.45)</td><td style="background-color: rgb(220, 226, 130); color: rgb(0, 0, 0);">28.68ms ±7.20 (1.78)</td>
+        </tr>
+        <tr>
+            <th>
+                <b>Overall</b>
+                <div>Average mean of all tests</div>
+            </th>
+            <td>1.00</td><td>1.69</td><td>1.75</td><td>2.03</td><td>2.03</td><td>2.79</td><td>2.88</td><td>2.96</td><td>3.60</td><td>4.23</td>
+        </tr>
+    </tbody>
+    <thead>
+        <tr>
+            <th>
+                <b>Name</b>
+                <br>
+                Memory for...
+            </th>
+            <th>ftl 0.0.1</th><th>renderer 3.0.0</th><th>renderer-v2 2.23.0</th><th>blits 2.0.0</th><th>blits-v1 1.51.0</th><th>lightning2 2.20.1</th><th>lightning2-core 2.20.1</th><th>ftl-canvas 0.0.1</th><th>renderer-canvasfonts-v2 2.23.0</th><th>renderer-canvasfonts 3.0.0</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <th>
+                <b>create 20k nodes</b>
+                <div>creating 20k nodes.</div>
+            </th>
+            <td>49.74MB (created in 299.60ms)</td><td>25.77MB (created in 291.90ms)</td><td>27.86MB (created in 280.10ms)</td><td>38.00MB (created in 93.40ms)</td><td>NaNMB (created in 65.60ms)</td><td>Failed</td><td>Failed</td><td>48.81MB (created in 317.50ms)</td><td>32.16MB (created in 326.50ms)</td><td>21.71MB (created in 339.10ms)</td>
+        </tr>
+    </tbody>
+    <thead>
+        <tr>
+            <th>
+                <b>Name</b>
+                <br>
+                File size for...
+            </th>
+            <th>ftl 0.0.1</th><th>renderer 3.0.0</th><th>renderer-v2 2.23.0</th><th>blits 2.0.0</th><th>blits-v1 1.51.0</th><th>lightning2 2.20.1</th><th>lightning2-core 2.20.1</th><th>ftl-canvas 0.0.1</th><th>renderer-canvasfonts-v2 2.23.0</th><th>renderer-canvasfonts 3.0.0</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <th>
+                <b>bundle size</b>
+                <div>JavaScript size of the framework</div>
+            </th>
+            <td>42.15 KB</td><td>139.12 KB</td><td>168.93 KB</td><td>291.21 KB</td><td>278.91 KB</td><td>327.78 KB</td><td>327.78 KB</td><td>31.42 KB</td><td>148.87 KB</td><td>118.13 KB</td>
+        </tr>
+    </tbody>
+</table></body>
+    </html>
