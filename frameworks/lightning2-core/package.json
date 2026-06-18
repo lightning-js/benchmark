@@ -14,6 +14,6 @@
     "vite": "^5.2.13"
   },
   "dependencies": {
-    "@lightningjs/core": "^2.20.1"
+    "@lightningjs/core": "2.20.1"
   }
 }
