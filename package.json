@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "node build.js",
+    "update-frameworks": "node update-frameworks.js",
     "setup": "npm install && npm run build",
     "setup:playwright": "npx playwright install",
     "start": "concurrently --kill-others --success last \"npx http-server -c-1 ./dist/\" \"node index.js\"",
