@@ -76,7 +76,13 @@ export const runBenchmark = async (url) => {
     page.on('console', async msg => { 
         const clearTm = () => { if (timeout) clearTimeout(timeout) };
 
-        if (msg.text().includes('Done!')) {
+        // Print all diagnostic messages
+        const text = msg.text();
+        if (msg.type() === 'error') {
+            console.log('[browser error]', text);
+        }
+
+        if (text.includes('Done!')) {
             clearTm();
             console.log('Benchmark complete!');
 
@@ -85,7 +91,7 @@ export const runBenchmark = async (url) => {
             exit(results);
         }
 
-        if (msg.text().includes('Memory!')) {
+        if (text.includes('Memory!')) {
             clearTm();
             console.log('Memory test complete!');
 

@@ -29,16 +29,17 @@ const { root, createElement, createText, signals, loadFont } = renderer({
     height: canvas.height,
     uploadBudgetMs: 1000,
     maxTextureSize: 4096,
+    numImageWorkers: 0,
   }
 });
 
-
-
-const { fontData, atlasTexture } = await loadFont('bitmap', {
+const fontLoadedPromise = loadFont('bitmap', {
   family: 'ArialBMF',
   json: './fonts/arial.json',
   image: './fonts/arial.png'
-})
+}).catch(error => {
+  console.error('[BMF] loadFont failed:', String(error));
+});
 
 const colours = [
   [1.0, 0.0, 0.0, 1.0], // red
@@ -107,8 +108,6 @@ const createRow = (parent, index) => {
       fontFamily: 'ArialBMF',
       alpha: 0.8,
       fontSize: 26,
-      fontData,
-      atlasTexture,
       text: `${pick(adjectives)} ${pick(nouns)}`,
       textColor: textColor,
     }),
@@ -173,8 +172,6 @@ const updateMany = (count, skip = 0) => new Promise((resolve) => {
       fontFamily: 'ArialBMF',
       alpha: 0.8,
       fontSize: 26,
-      fontData,
-      atlasTexture,
       text: `${pick(adjectives)} ${pick(nouns)}`,
       textColor: pick(colours),
     });
@@ -226,8 +223,6 @@ const selectRandomNode = () => new Promise((resolve) => {
     type: 'bitmap',
     fontFamily: 'ArialBMF',
     fontSize: 128,
-    fontData,
-    atlasTexture,
     text: `${pick(adjectives)} ${pick(nouns)}`,
     textColor: colours[9],
   });
@@ -324,8 +319,13 @@ const runAndLog = async (fn, args, repeat) => {
 
 // Entry point
 const hash = window.location.hash.substring(1);
-if (hash === 'memory') {
-  createMemoryBenchmark();
-} else {
-  runBenchmark();
-}
+
+fontLoadedPromise.then(() => {
+  if (hash === 'memory') {
+    createMemoryBenchmark();
+  } else {
+    runBenchmark();
+  }
+}).catch(error => {
+  console.error('[BMF] Benchmark failed to start:', error);
+});
