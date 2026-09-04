@@ -34,5 +34,8 @@
   },
   "dependencies": {
     "@lightningjs/blits": "2.8.9"
+  },
+  "overrides": {
+    "handlebars": "4.7.9"
   }
 }
