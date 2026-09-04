@@ -30,9 +30,12 @@
     "husky": "^7.0.4",
     "lint-staged": "^12.3.3",
     "prettier": "^2.5.1",
-    "vite": "^5.0.0"
+    "vite": "^6.4.3"
   },
   "dependencies": {
     "@lightningjs/blits": "2.8.9"
+  },
+  "overrides": {
+    "handlebars": "4.7.9"
   }
 }
