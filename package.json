@@ -15,7 +15,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "concurrently": "^8.2.2",
+    "concurrently": "^10.0.5",
     "http-server": "^14.1.1",
     "playwright": "^1.58.1"
   },
