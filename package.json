@@ -20,7 +20,7 @@
     "playwright": "^1.58.1"
   },
   "devDependencies": {
-    "dotenv": "^16.4.5",
+    "dotenv": "^17.4.2",
     "shelljs": "^0.10.0",
     "@types/node": "^26.4.1",
     "jsdoc": "^4.0.3"
