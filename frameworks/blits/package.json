@@ -33,7 +33,7 @@
     "vite": "^6.4.3"
   },
   "dependencies": {
-    "@lightningjs/blits": "2.8.9"
+    "@lightningjs/blits": "2.9.0"
   },
   "overrides": {
     "handlebars": "4.7.9"

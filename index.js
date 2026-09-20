@@ -246,7 +246,21 @@ const writeOfficialResults = (filename) => {
     const currentDate = new Date();
     const formattedDate = currentDate.toISOString().slice(0, 10).replace(/-/g, '');
     const cleanedFilename = filename.replace('_results_', '_');
-    const newFilename = `${formattedDate}_${cleanedFilename}`;
+    let newFilename = `${formattedDate}_${cleanedFilename}`;
+
+    // Don't overwrite an earlier run of the same day, add a counter suffix instead
+    if (fs.existsSync(`./official_results/${newFilename}`)) {
+        const extIndex = newFilename.lastIndexOf('.');
+        const base = newFilename.slice(0, extIndex);
+        const ext = newFilename.slice(extIndex);
+
+        let counter = 2;
+        while (fs.existsSync(`./official_results/${base}_${counter}${ext}`)) {
+            counter++;
+        }
+
+        newFilename = `${base}_${counter}${ext}`;
+    }
 
     // Copy the file to the new location with the new filename
     shell.cp(sourceFile, `./official_results/${newFilename}`);
@@ -268,7 +282,16 @@ const writeOfficialResults = (filename) => {
     const blitsVersion = 'Blits ' + frameworkVersions['blits'] || '';
     const rendererVersion = 'Renderer ' + frameworkVersions['renderer'] || '';
     const version = `${formattedDate} ${blitsVersion} ${rendererVersion} ${browserVersion}`;
-    resultsJson[version] = filename;
+
+    // Make sure a repeated run on the same day with identical versions gets its own entry
+    let versionKey = version;
+    let versionCounter = 2;
+    while (resultsJson[versionKey] !== undefined) {
+        versionKey = `${version} (${versionCounter})`;
+        versionCounter++;
+    }
+
+    resultsJson[versionKey] = filename;
 
     // Write the updated JSON back to the file
     fs.writeFileSync(resultsJsonPath, JSON.stringify(resultsJson, null, 2));
