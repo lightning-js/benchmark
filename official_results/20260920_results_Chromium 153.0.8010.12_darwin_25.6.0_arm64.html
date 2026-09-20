@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Lightning JS Framework benchmark</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 0;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            th, td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+            th {
+                background-color: #f2f2f2;
+            }
+            h2 {
+                margin: 0;
+            }
+            p {
+                margin: 0;
+            }
+            div {
+                padding: 10px;
+            }
+            span {
+                font-weight: bold;
+            }
+        </style>
+    </head>
+    <body><div>
+    <h2>Results for Lightning JS Framework benchmark</h2>
+    <p>The benchmark was run on <span>darwin 25.6.0 arm64</span> on a <span>Apple M3 Max 14 and 36.00 GB memory</span></p>
+    <p>Tests where executed on browser version: <span id="browserVersion">Chromium 153.0.8010.12</span> using PlayWright</p>
+</div><div>
+    <h2>Results</h2>
+    <p>Tests are run by executing an operation and waiting for the WebGL rennder to be Idle</p>
+    <p>Results are the time in milliseconds to execute the operation</p>
+    <p>All operations are executed on 6x CPU slowdown</p>
+</div><table>
+    <thead>
+        <tr>
+            <th>
+                <b>Name</b>
+                <br>
+                Duration for...
+            </th>
+            <th>ftl 0.9.0</th><th>ftl-webgl-bitmap 0.9.0</th><th>renderer 3.3.1</th><th>blits 2.8.9</th><th>ftl-canvas-bitmap 0.9.0</th><th>ftl-canvas 0.9.0</th><th>renderer-canvasfonts 3.3.1</th><th>lightning2 2.20.3</th><th>lightning2-core 2.20.3</th>
+        </tr>
+
+    </thead>
+    <tbody>
+        <tr>
+            <th>
+                <b>create rows</b>
+                <div>creating 1,000 nodes. (5 warmup runs)</div>
+            </th>
+            <td style="background-color: rgb(116, 196, 125); color: rgb(0, 0, 0);">26.78ms ±4.30 (1.11)</td><td style="background-color: rgb(99, 191, 124); color: rgb(0, 0, 0);">22.74ms ±4.80 (1.00)</td><td style="background-color: rgb(162, 209, 127); color: rgb(0, 0, 0);">38.74ms ±17.40 (1.41)</td><td style="background-color: rgb(199, 220, 129); color: rgb(0, 0, 0);">49.34ms ±1.30 (1.64)</td><td style="background-color: rgb(249, 105, 108); color: rgb(0, 0, 0);">210.10ms ±38.50 (4.15)</td><td style="background-color: rgb(250, 119, 111); color: rgb(0, 0, 0);">182.22ms ±54.90 (3.79)</td><td style="background-color: rgb(250, 118, 110); color: rgb(0, 0, 0);">182.78ms ±54.30 (3.80)</td><td style="background-color: rgb(249, 105, 108); color: rgb(0, 0, 0);">223.74ms ±198.20 (4.32)</td><td style="background-color: rgb(249, 105, 108); color: rgb(0, 0, 0);">232.84ms ±177.70 (4.43)</td>
+        </tr>
+        <tr>
+            <th>
+                <b>replace all rows</b>
+                <div>updating all 1,000 nodes. (5 warmup runs)</div>
+            </th>
+            <td style="background-color: rgb(118, 196, 125); color: rgb(0, 0, 0);">18.94ms ±1.40 (1.12)</td><td style="background-color: rgb(99, 191, 124); color: rgb(0, 0, 0);">15.44ms ±3.50 (1.00)</td><td style="background-color: rgb(205, 222, 129); color: rgb(0, 0, 0);">38.94ms ±18.00 (1.68)</td><td style="background-color: rgb(241, 232, 131); color: rgb(0, 0, 0);">49.04ms ±2.00 (1.91)</td><td style="background-color: rgb(249, 109, 109); color: rgb(0, 0, 0);">178.30ms ±16.70 (3.94)</td><td style="background-color: rgb(249, 105, 108); color: rgb(0, 0, 0);">366.50ms ±63.30 (5.89)</td><td style="background-color: rgb(249, 106, 108); color: rgb(0, 0, 0);">182.22ms ±34.00 (3.98)</td><td style="background-color: rgb(249, 105, 108); color: rgb(0, 0, 0);">637.58ms ±241.60 (8.03)</td><td style="background-color: rgb(249, 105, 108); color: rgb(0, 0, 0);">633.16ms ±135.00 (8.00)</td>
+        </tr>
+        <tr>
+            <th>
+                <b>partial update rows</b>
+                <div>updating every 10th node for 1,000 nodes. (5 warmup runs)</div>
+            </th>
+            <td style="background-color: rgb(104, 192, 124); color: rgb(0, 0, 0);">9.06ms ±0.60 (1.03)</td><td style="background-color: rgb(99, 191, 124); color: rgb(0, 0, 0);">8.58ms ±2.50 (1.00)</td><td style="background-color: rgb(254, 207, 127); color: rgb(0, 0, 0);">42.40ms ±16.90 (2.45)</td><td style="background-color: rgb(254, 222, 129); color: rgb(0, 0, 0);">35.44ms ±17.40 (2.21)</td><td style="background-color: rgb(254, 216, 128); color: rgb(0, 0, 0);">38.00ms ±14.00 (2.30)</td><td style="background-color: rgb(250, 134, 113); color: rgb(0, 0, 0);">82.70ms ±5.60 (3.56)</td><td style="background-color: rgb(251, 142, 115); color: rgb(0, 0, 0);">77.78ms ±17.60 (3.44)</td><td style="background-color: rgb(251, 141, 115); color: rgb(0, 0, 0);">78.26ms ±7.90 (3.45)</td><td style="background-color: rgb(251, 138, 114); color: rgb(0, 0, 0);">79.98ms ±10.40 (3.49)</td>
+        </tr>
+        <tr>
+            <th>
+                <b>select row</b>
+                <div>selecting a node at random. (5 warmup runs)</div>
+            </th>
+            <td style="background-color: rgb(106, 193, 124); color: rgb(0, 0, 0);">9.82ms ±2.10 (1.04)</td><td style="background-color: rgb(99, 191, 124); color: rgb(0, 0, 0);">7.92ms ±1.50 (1.00)</td><td style="background-color: rgb(160, 209, 127); color: rgb(0, 0, 0);">44.82ms ±20.30 (1.39)</td><td style="background-color: rgb(154, 207, 127); color: rgb(0, 0, 0);">38.82ms ±17.20 (1.35)</td><td style="background-color: rgb(128, 199, 125); color: rgb(0, 0, 0);">19.36ms ±1.60 (1.19)</td><td style="background-color: rgb(175, 213, 128); color: rgb(0, 0, 0);">63.48ms ±74.80 (1.49)</td><td style="background-color: rgb(183, 215, 128); color: rgb(0, 0, 0);">75.92ms ±16.80 (1.54)</td><td style="background-color: rgb(153, 207, 127); color: rgb(0, 0, 0);">38.12ms ±5.70 (1.35)</td><td style="background-color: rgb(153, 207, 127); color: rgb(0, 0, 0);">38.18ms ±10.80 (1.35)</td>
+        </tr>
+        <tr>
+            <th>
+                <b>swap rows</b>
+                <div>swapping 2 nodes. (5 warmup runs)</div>
+            </th>
+            <td style="background-color: rgb(104, 192, 124); color: rgb(0, 0, 0);">9.84ms ±2.90 (1.03)</td><td style="background-color: rgb(99, 191, 124); color: rgb(0, 0, 0);">7.80ms ±2.50 (1.00)</td><td style="background-color: rgb(141, 203, 126); color: rgb(0, 0, 0);">48.44ms ±3.40 (1.27)</td><td style="background-color: rgb(137, 202, 126); color: rgb(0, 0, 0);">41.60ms ±19.20 (1.24)</td><td style="background-color: rgb(118, 197, 125); color: rgb(0, 0, 0);">19.12ms ±5.90 (1.12)</td><td style="background-color: rgb(102, 192, 124); color: rgb(0, 0, 0);">9.20ms ±6.40 (1.02)</td><td style="background-color: rgb(152, 206, 127); color: rgb(0, 0, 0);">73.44ms ±24.30 (1.34)</td><td style="background-color: rgb(134, 201, 126); color: rgb(0, 0, 0);">37.24ms ±2.90 (1.23)</td><td style="background-color: rgb(134, 201, 126); color: rgb(0, 0, 0);">37.68ms ±4.20 (1.23)</td>
+        </tr>
+        <tr>
+            <th>
+                <b>remove row</b>
+                <div>removing a node. (5 warmup runs)</div>
+            </th>
+            <td style="background-color: rgb(132, 201, 126); color: rgb(0, 0, 0);">10.32ms ±1.40 (1.21)</td><td style="background-color: rgb(122, 198, 125); color: rgb(0, 0, 0);">9.32ms ±1.30 (1.15)</td><td style="background-color: rgb(255, 231, 131); color: rgb(0, 0, 0);">28.60ms ±16.40 (2.08)</td><td style="background-color: rgb(255, 230, 131); color: rgb(0, 0, 0);">28.88ms ±13.50 (2.09)</td><td style="background-color: rgb(206, 222, 130); color: rgb(0, 0, 0);">19.28ms ±3.90 (1.69)</td><td style="background-color: rgb(99, 191, 124); color: rgb(0, 0, 0);">7.18ms ±1.90 (1.00)</td><td style="background-color: rgb(238, 231, 131); color: rgb(0, 0, 0);">23.94ms ±17.50 (1.89)</td><td style="background-color: rgb(254, 220, 129); color: rgb(0, 0, 0);">32.96ms ±3.30 (2.24)</td><td style="background-color: rgb(254, 221, 129); color: rgb(0, 0, 0);">32.58ms ±2.90 (2.23)</td>
+        </tr>
+        <tr>
+            <th>
+                <b>create many rows</b>
+                <div>creating 10,000 nodes. (5 warmup runs)</div>
+            </th>
+            <td style="background-color: rgb(99, 191, 124); color: rgb(0, 0, 0);">79.88ms ±7.50 (1.00)</td><td style="background-color: rgb(223, 227, 130); color: rgb(0, 0, 0);">227.08ms ±31.80 (1.80)</td><td style="background-color: rgb(106, 193, 124); color: rgb(0, 0, 0);">86.60ms ±22.40 (1.05)</td><td style="background-color: rgb(234, 230, 131); color: rgb(0, 0, 0);">242.72ms ±66.40 (1.86)</td><td style="background-color: rgb(254, 204, 126); color: rgb(0, 0, 0);">405.40ms ±15.60 (2.48)</td><td style="background-color: rgb(255, 228, 130); color: rgb(0, 0, 0);">307.90ms ±48.90 (2.13)</td><td style="background-color: rgb(234, 230, 131); color: rgb(0, 0, 0);">243.78ms ±21.90 (1.87)</td><td style="background-color: rgb(155, 207, 127); color: rgb(0, 0, 0);">137.68ms ±25.40 (1.36)</td><td style="background-color: rgb(179, 214, 128); color: rgb(0, 0, 0);">167.54ms ±5.40 (1.51)</td>
+        </tr>
+        <tr>
+            <th>
+                <b>append rows</b>
+                <div>appending 1,000 nodes to 1,000 nodes. (5 warmup runs)</div>
+            </th>
+            <td style="background-color: rgb(99, 191, 124); color: rgb(0, 0, 0);">15.60ms ±2.50 (1.00)</td><td style="background-color: rgb(159, 208, 127); color: rgb(0, 0, 0);">28.28ms ±6.30 (1.39)</td><td style="background-color: rgb(253, 202, 126); color: rgb(0, 0, 0);">83.42ms ±2.40 (2.51)</td><td style="background-color: rgb(249, 105, 108); color: rgb(0, 0, 0);">275.86ms ±26.70 (4.85)</td><td style="background-color: rgb(212, 224, 130); color: rgb(0, 0, 0);">42.02ms ±4.30 (1.72)</td><td style="background-color: rgb(186, 216, 128); color: rgb(0, 0, 0);">34.92ms ±9.20 (1.56)</td><td style="background-color: rgb(249, 105, 108); color: rgb(0, 0, 0);">294.86ms ±69.80 (5.04)</td><td style="background-color: rgb(251, 146, 116); color: rgb(0, 0, 0);">142.18ms ±7.90 (3.37)</td><td style="background-color: rgb(250, 129, 112); color: rgb(0, 0, 0);">162.60ms ±3.60 (3.63)</td>
+        </tr>
+        <tr>
+            <th>
+                <b>clear rows</b>
+                <div>removing all nodes. (5 warmup runs)</div>
+            </th>
+            <td style="background-color: rgb(100, 191, 124); color: rgb(0, 0, 0);">7.18ms ±1.70 (1.00)</td><td style="background-color: rgb(99, 191, 124); color: rgb(0, 0, 0);">7.16ms ±1.80 (1.00)</td><td style="background-color: rgb(255, 232, 131); color: rgb(0, 0, 0);">39.64ms ±17.90 (2.06)</td><td style="background-color: rgb(180, 214, 128); color: rgb(0, 0, 0);">19.32ms ±16.80 (1.52)</td><td style="background-color: rgb(99, 191, 124); color: rgb(0, 0, 0);">7.12ms ±3.30 (1.00)</td><td style="background-color: rgb(124, 198, 125); color: rgb(0, 0, 0);">10.10ms ±2.90 (1.16)</td><td style="background-color: rgb(255, 233, 131); color: rgb(0, 0, 0);">39.36ms ±21.60 (2.05)</td><td style="background-color: rgb(240, 232, 131); color: rgb(0, 0, 0);">32.86ms ±4.50 (1.90)</td><td style="background-color: rgb(237, 231, 131); color: rgb(0, 0, 0);">32.14ms ±4.00 (1.88)</td>
+        </tr>
+        <tr>
+            <th>
+                <b>Overall</b>
+                <div>Average mean of all tests</div>
+            </th>
+            <td>1.06</td><td>1.15</td><td>1.77</td><td>2.07</td><td>2.18</td><td>2.40</td><td>2.77</td><td>3.03</td><td>3.08</td>
+        </tr>
+    </tbody>
+    <thead>
+        <tr>
+            <th>
+                <b>Name</b>
+                <br>
+                Memory for...
+            </th>
+            <th>ftl 0.9.0</th><th>ftl-webgl-bitmap 0.9.0</th><th>renderer 3.3.1</th><th>blits 2.8.9</th><th>ftl-canvas-bitmap 0.9.0</th><th>ftl-canvas 0.9.0</th><th>renderer-canvasfonts 3.3.1</th><th>lightning2 2.20.3</th><th>lightning2-core 2.20.3</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <th>
+                <b>create 20k nodes</b>
+                <div>creating 20k nodes.</div>
+            </th>
+            <td>45.66MB (created in 283.50ms)</td><td>46.82MB (created in 270.60ms)</td><td>24.15MB (created in 308.00ms)</td><td>37.54MB (created in 97.20ms)</td><td>46.30MB (created in 299.50ms)</td><td>45.50MB (created in 302.70ms)</td><td>25.15MB (created in 340.00ms)</td><td>Failed</td><td>Failed</td>
+        </tr>
+    </tbody>
+    <thead>
+        <tr>
+            <th>
+                <b>Name</b>
+                <br>
+                File size for...
+            </th>
+            <th>ftl 0.9.0</th><th>ftl-webgl-bitmap 0.9.0</th><th>renderer 3.3.1</th><th>blits 2.8.9</th><th>ftl-canvas-bitmap 0.9.0</th><th>ftl-canvas 0.9.0</th><th>renderer-canvasfonts 3.3.1</th><th>lightning2 2.20.3</th><th>lightning2-core 2.20.3</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <th>
+                <b>bundle size</b>
+                <div>JavaScript size of the framework</div>
+            </th>
+            <td>50.74 KB</td><td>49.63 KB</td><td>171.71 KB</td><td>334.87 KB</td><td>35.40 KB</td><td>37.30 KB</td><td>134.73 KB</td><td>327.79 KB</td><td>327.79 KB</td>
+        </tr>
+    </tbody>
+</table></body>
+    </html>
