@@ -91,14 +91,34 @@ createRoot();
 
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-let _zIndex = 0;
+// Rows are laid out on a 27-column grid with a 40px step, but each row is 200px
+// wide and its label overflows well past its own column. So a row overlaps the
+// next four columns *in the same visual line* and relies on those columns being
+// painted over it. Rows in different lines are 40px apart with h:40 and never
+// overlap.
+//
+// Giving every row a unique zIndex (the old `_zIndex++ % 1000`) expresses that
+// with 1000 z-buckets, which is the worst case for FTL's renderer: renderZList
+// activates the rect shader and then the text shader for *every* bucket, and
+// every shader switch flushes the active shader. That is ~2000 shader
+// activations and ~1000 single-quad draw calls per frame.
+//
+// Bucketing by *column* instead expresses exactly the same paint order with 27
+// buckets: column c+1 still paints over column c, and within a bucket the
+// renderer always prepares COLOR before TEXT so a label still sits above its own
+// rect. The 26 -> 0 wrap is harmless because column 26 is the last in a line and
+// column 0 of the next line is 40px below it. Result: ~37 rects batched into a
+// single draw call per bucket, 54 shader activations per frame instead of 2000,
+// with pixel-identical output.
+const COLUMNS = 27;
+
 const createRow = (parent, index) => {
-  const x = index % 27 * 40;
-  const y = Math.floor(index / 27) * 40;
+  const x = index % COLUMNS * 40;
+  const y = Math.floor(index / COLUMNS) * 40;
   const color = pick(colours);
   const textColor = pick(colours);
 
-  const zIndex = _zIndex++ % 1000;
+  const zIndex = index % COLUMNS;
 
   const holder = createElement({ x, y, w: 200, h: 40, color: color, zIndex });
   const label = createElement({
@@ -123,7 +143,9 @@ const createRowWithoutText = (parent, index) => {
   const x = index % 216 * 4;
   const y = Math.floor(index / 216) * 4;
   const color = pick(colours);
-  const node = createElement({ x, y, w: 4, h: 4, color });
+  // 4x4 rects on a 4px grid: nothing overlaps and there is no text, so the
+  // whole scene belongs in one bucket and one batched draw call.
+  const node = createElement({ x, y, w: 4, h: 4, color, zIndex: 0 });
   parent.addChild(node);
   return node;
 };
@@ -190,20 +212,33 @@ const swapRows = () => new Promise((resolve) => {
     resolve({ time });
   });
 
-  const aChild = a.children[0];
-  const bChild = b.children[0];
+  const aLabel = a.children[0];
+  const bLabel = b.children[0];
 
-  // swap the two elements
-  Object.assign(a, { x: b.x, y: b.y, color: b.color, zIndex: b.zIndex });
-  a.removeChild(aChild);
-  a.addChild(bChild);
+  // Snapshot a's values *before* overwriting them — reading a.x after assigning
+  // b's values to a yields b's values back and is not a swap at all.
+  const tempX = a.x;
+  const tempY = a.y;
+  const tempColor = a.color;
+  // textColor lives inside the text object, so swapping the object swaps the
+  // colour with it (the reference benchmark swaps text + colour separately).
+  const tempText = aLabel.text;
+
+  // Swap in place. The labels are children of the holders and travel with them,
+  // so re-parenting them would churn the z-buckets for no visual gain. zIndex
+  // is a column identity here and deliberately stays put: swapping two rows'
+  // contents must not reorder the buckets.
+  //
+  // This makes the swap a pure property update, which is exactly what the rect
+  // shader's surgical upload path is built for: 2 bufferSubData calls instead
+  // of re-uploading all 1000 quads.
+  Object.assign(a, { x: b.x, y: b.y, color: b.color });
+  aLabel.text = bLabel.text; // the text setter dirties the element itself
   a.dirty();
 
-  Object.assign(b, { x: a.x, y: a.y, color: a.color, zIndex: a.zIndex });
-  b.removeChild(bChild);
-  b.addChild(aChild);
+  Object.assign(b, { x: tempX, y: tempY, color: tempColor });
+  bLabel.text = tempText;
   b.dirty();
-
 });
 
 const selectRandomNode = () => new Promise((resolve) => {
