@@ -11,7 +11,8 @@ export default defineConfig({
       targets: [
         {
           src: 'fonts/**/*',
-          dest: 'fonts'
+          dest: 'fonts',
+          rename: { stripBase: 1 }
         }
       ]
     })

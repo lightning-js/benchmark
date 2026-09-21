@@ -27,5 +27,6 @@
   "20260803 Blits 2.8.6 Renderer 3.1.5 Chromium 145.0.7632.6": "20260803_results_Chromium 145.0.7632.6_darwin_25.5.0_arm64.html",
   "20260819 Blits 2.8.9 Renderer 3.3.1 Chromium 145.0.7632.6": "20260819_results_Chromium 145.0.7632.6_darwin_25.6.0_arm64.html",
   "20260920 Blits 2.8.9 Renderer 3.3.1 Chromium 153.0.8010.12": "20260920_results_Chromium 153.0.8010.12_darwin_25.6.0_arm64.html",
-  "20260920 Blits 2.9.0 Renderer 3.4.2 Chromium 153.0.8010.12": "20260920_results_Chromium 153.0.8010.12_darwin_25.6.0_arm64_2.html"
+  "20260920 Blits 2.9.0 Renderer 3.4.2 Chromium 153.0.8010.12": "20260920_results_Chromium 153.0.8010.12_darwin_25.6.0_arm64_2.html",
+  "20260921 Blits 2.9.0 Renderer 3.5.0 Chromium 153.0.8010.12": "20260921_results_Chromium 153.0.8010.12_darwin_27.0.0_arm64.html"
 }
