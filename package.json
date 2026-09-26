@@ -22,7 +22,7 @@
   "devDependencies": {
     "dotenv": "^18.0.3",
     "shelljs": "^0.10.0",
-    "@types/node": "^26.5.0",
+    "@types/node": "^26.6.2",
     "jsdoc": "^4.0.3"
   },
   "overrides": {
