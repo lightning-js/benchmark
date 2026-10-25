@@ -10,7 +10,8 @@
     "setup": "npm install && npm run build",
     "setup:playwright": "npx playwright install",
     "start": "concurrently --kill-others --success last \"npx http-server -c-1 ./dist/\" \"node index.js\"",
-    "start:official": "concurrently --kill-others --success last \"npx http-server -c-1 ./dist/\" \"node index.js --results\""
+    "start:official": "concurrently --kill-others --success last \"npx http-server -c-1 ./dist/\" \"node index.js --results\"",
+    "compare": "node index.js --compare"
   },
   "author": "",
   "license": "MIT",

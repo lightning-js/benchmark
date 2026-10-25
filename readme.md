@@ -26,6 +26,29 @@ To run only the startup benchmark (skips the throughput and memory benchmarks, u
 
 Tune the number of cold loads per framework with `STARTUP_RUNS` (default 7) and force headless Chromium with `HEADLESS=true`.
 
+## Compare mode (regression check for renderer / FTL release PRs)
+
+Compares two already-built `dist/<dir>` bundles back-to-back on the same machine/browser and fails when the candidate regresses beyond a threshold. Intended to run infrequently (e.g. version bumps / release PRs), since the full throughput suite is slow.
+
+`npx http-server -c-1 ./dist/` (terminal 1)
+
+`node index.js --compare --base renderer-base --current renderer-pr --threshold 10` (terminal 2)
+
+- `--base <dist-dir>` / `--current <dist-dir>`: required, must exist under `dist/`. Build them first, e.g. build `main` into `dist/renderer-base` and the PR into `dist/renderer-pr` (for FTL: `ftl-base` / `ftl-pr`).
+- `--threshold <pct>`: allowed % slowdown, default `10`. Gates on overall `avgMean`, startup average, and bundle size.
+- `--strict`: also fail when any single op (or memory heap/time) exceeds the threshold. Default reports per-op regressions without failing.
+- `--startup-only`: only compare cold startup + bundle size (much faster, more stable — best for frequent CI).
+- Writes `results/compare_<base>_vs_<current>.json` (machine-readable artifact), `results/compare_<base>_vs_<current>.md` (paste into a PR comment or CI step summary), plus the standard side-by-side HTML report. Exit code is `1` on regression, `0` otherwise.
+
+Example for a renderer release PR (run once, same job/machine):
+
+```
+# base from main, current from the PR
+cp -r dist/renderer dist/renderer-base
+# ... rebuild dist/renderer-pr from the PR source ...
+node index.js --compare --base renderer-base --current renderer-pr --threshold 10
+```
+
 ## Why not use js-framework-benchmark
 
 Two reasons:

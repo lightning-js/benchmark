@@ -26,6 +26,7 @@ import shell from 'shelljs';
 import { runBenchmark, getBrowserVersion } from "./testrunner/runBenchmark.js";
 import { runStartupBenchmark } from "./testrunner/runStartup.js";
 import { processResults, processStartupResults } from "./testrunner/processResults.js";
+import { compareBenchmarks, formatComparisonMarkdown } from "./testrunner/compareResults.js";
 import { writeResults } from "./testrunner/writeResults.js";
 import { getJavaScriptBundleSize } from "./testrunner/totalBundlefileSize.js";
 
@@ -46,6 +47,48 @@ if (args.includes('--results') || args.includes('-r')) {
  * Useful for validating the startup functionality quickly.
  */
 const startupOnlyFlag = args.includes('--startup-only');
+
+/**
+ * Parses a `--name value` or `--name=value` CLI argument.
+ * @param {string} name - Argument name without leading dashes.
+ * @returns {string|undefined} The argument value, if present.
+ */
+const getArgValue = (name) => {
+    const flag = `--${name}`;
+    for (let i = 0; i < args.length; i++) {
+        if (args[i] === flag && i + 1 < args.length && !args[i + 1].startsWith('--')) {
+            return args[i + 1];
+        }
+        if (args[i].startsWith(`${flag}=`)) {
+            return args[i].slice(flag.length + 1);
+        }
+    }
+    return undefined;
+};
+
+/**
+ * Compare mode: `node index.js --compare --base <dir> --current <dir>
+ * [--threshold <pct>] [--strict] [--startup-only]`.
+ * Compares two already-built `dist/<dir>` bundles on the same machine/browser.
+ */
+const compareFlag = args.includes('--compare');
+const compareBase = getArgValue('base');
+const compareCurrent = getArgValue('current');
+const compareThresholdRaw = getArgValue('threshold');
+const compareThreshold = compareThresholdRaw === undefined ? 10 : parseFloat(compareThresholdRaw);
+const compareStrict = args.includes('--strict');
+
+// Fail fast before launching a browser when compare args are invalid.
+if (compareFlag) {
+    if (!compareBase || !compareCurrent) {
+        console.error('Compare mode requires --base <dist-dir> and --current <dist-dir>, e.g. node index.js --compare --base renderer-base --current renderer-pr [--threshold 10] [--strict] [--startup-only]');
+        process.exit(1);
+    }
+    if (!Number.isFinite(compareThreshold) || compareThreshold < 0) {
+        console.error(`Invalid --threshold '${compareThresholdRaw}', expected a non-negative number (percent)`);
+        process.exit(1);
+    }
+}
 
 /**
  * Checks if the './dist' directory exists.
@@ -348,5 +391,127 @@ const writeOfficialResults = (filename) => {
     fs.writeFileSync(resultsJsonPath, JSON.stringify(resultsJson, null, 2));
 }
 
+/**
+ * Runs the full benchmark pipeline for a single already-built `dist/<dir>` bundle.
+ * Shared by normal and `--compare` runs so both variants are measured identically.
+ * @param {string} dir - The dist subdirectory to benchmark.
+ * @returns {Promise<{result: Object, memoryResult: Object, startupResult: Object, fileSize: number}>}
+ */
+const runOne = async (dir) => {
+    let result = null;
+    let memoryResult = null;
 
-run(dirs[0]);
+    if (!startupOnlyFlag) {
+        console.log(`Running benchmark for ${dir}`);
+        result = await runBenchmark(`http://localhost:8080/${dir}/`);
+
+        console.log(`Running memory benchmark for ${dir}`);
+        memoryResult = await runBenchmark(`http://localhost:8080/${dir}/#memory`);
+    } else {
+        console.log(`Skipping throughput and memory benchmarks for ${dir} (--startup-only)`);
+    }
+
+    console.log(`Running startup benchmark for ${dir}`);
+    const startupResult = await runStartupBenchmark(`http://localhost:8080/${dir}/`);
+
+    console.log(`Getting total size of the javascript bundle for ${dir}`);
+    const fileSize = getJavaScriptBundleSize(`./dist/${dir}`);
+
+    return { result, memoryResult, startupResult, fileSize };
+};
+
+/**
+ * Compare mode entrypoint: benchmark `--base` and `--current` back-to-back on
+ * the same browser, then fail the process when the candidate regresses beyond
+ * `--threshold` percent. Intended for release/version-bump PRs in renderer/FTL:
+ * build the base bundle (e.g. `main`) and the PR bundle into two `dist/` dirs,
+ * then `node index.js --compare --base renderer-base --current renderer-pr`.
+ */
+const runCompare = async (base, current) => {
+    if (!Number.isFinite(compareThreshold) || compareThreshold < 0) {
+        console.error(`Invalid --threshold '${compareThresholdRaw}', expected a non-negative number (percent)`);
+        process.exit(1);
+    }
+
+    for (const dir of [base, current]) {
+        if (!fs.existsSync(`./dist/${dir}`)) {
+            console.error(`Compare target './dist/${dir}' does not exist. Build both bundles first (e.g. copy dist/renderer to dist/${dir}).`);
+            process.exit(1);
+        }
+    }
+
+    const compareVersions = {
+        [base]: lookupFrameworkVersion(base),
+        [current]: lookupFrameworkVersion(current),
+    };
+
+    const compareResults = {};
+    const compareMemory = {};
+    const compareFileSize = {};
+    const compareStartup = {};
+
+    // Sequential on the same machine/browser setup keeps the comparison fair.
+    for (const dir of [base, current]) {
+        const { result, memoryResult, startupResult, fileSize } = await runOne(dir);
+        if (result !== null) compareResults[dir] = result;
+        if (memoryResult !== null) compareMemory[dir] = memoryResult;
+        compareStartup[dir] = startupResult;
+        compareFileSize[dir] = fileSize;
+    }
+
+    let processed;
+    if (startupOnlyFlag) {
+        processed = processStartupResults(compareStartup, compareFileSize);
+    } else {
+        processed = processResults(compareResults, compareMemory, compareFileSize, compareStartup);
+    }
+    console.log('Processed compare results:');
+    console.log(processed);
+
+    const comparison = compareBenchmarks({
+        results: compareResults,
+        memoryResults: compareMemory,
+        startupResults: compareStartup,
+        fileSizeResults: compareFileSize,
+        processedResults: processed,
+        base,
+        current,
+        thresholdPct: compareThreshold,
+        strict: compareStrict,
+        startupOnly: startupOnlyFlag,
+    });
+
+    console.log(`Compare ${base} vs ${current} (threshold +${compareThreshold}%${compareStrict ? ', strict' : ''}):`);
+    console.log(comparison);
+
+    const markdown = formatComparisonMarkdown(comparison, {
+        browserVersion,
+        frameworkVersions: compareVersions,
+    });
+    console.log(markdown);
+
+    if (!fs.existsSync('./results')) {
+        fs.mkdirSync('./results');
+    }
+    const stem = `compare_${base}_vs_${current}`;
+    fs.writeFileSync(`./results/${stem}.json`, JSON.stringify({ ...comparison, browserVersion, frameworkVersions: compareVersions }, null, 2));
+    fs.writeFileSync(`./results/${stem}.md`, markdown);
+    console.log(`Comparison written to ./results/${stem}.json and ./results/${stem}.md`);
+
+    // Also emit the standard side-by-side HTML report for visual inspection.
+    const htmlFile = await writeResults(processed, compareVersions, browserVersion);
+    console.log(`Side-by-side HTML report: ./results/${htmlFile}`);
+
+    if (comparison.regressed) {
+        console.error(`❌ REGRESSION: ${current} regressed vs ${base} beyond +${compareThreshold}%`);
+        process.exitCode = 1;
+    } else {
+        console.log(`✅ NO REGRESSION: ${current} is within +${compareThreshold}% of ${base}`);
+    }
+};
+
+if (compareFlag) {
+    await runCompare(compareBase, compareCurrent);
+} else {
+    run(dirs[0]);
+}
