@@ -5,6 +5,7 @@ import canvasTextEngine from 'ftl/text/canvas';
 
 import { adjectives, nouns } from '../../shared/data.js';
 import { warmup } from '../../shared/utils/warmup.js';
+import { reportStartup } from '../../shared/utils/startup.js';
 import { run } from '../../shared/utils/run.js';
 
 const canvas = document.querySelector('canvas')
@@ -287,6 +288,17 @@ const createMemoryBenchmark = async () => {
   console.log('Memory!', results);
 };
 
+const runStartupBenchmark = async () => {
+  // Cold startup: navigation start -> first idle after rendering 1,000 rows.
+  // waitUntilIdle resolves `performance.now() - startTime`, so a startTime of 0
+  // yields time since navigation start: JS download/parse/execute, framework
+  // init and scene build are all included.
+  const startupPromise = waitUntilIdle(0);
+  for (let i = 0; i < 1000; i++) createRow(rootNode, i);
+  const time = await startupPromise;
+  reportStartup(time);
+};
+
 const runBenchmark = async () => {
   const results = {};
 
@@ -342,6 +354,8 @@ const runAndLog = async (fn, args, repeat) => {
 const hash = window.location.hash.substring(1);
 if (hash === 'memory') {
   createMemoryBenchmark();
+} else if (hash === 'startup') {
+  runStartupBenchmark();
 } else {
   runBenchmark();
 }

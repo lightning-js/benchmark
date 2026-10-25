@@ -31,6 +31,10 @@ export default Blits.Application({
   routes: [
     { path: '/', component: Benchmark },
     { path: '/memory', component: Memory },
+    // Hash-routed alias so `#startup` mounts Benchmark (same as `#memory`
+    // mounts Memory). Benchmark.ready branches on the hash and runs the
+    // cold-startup measurement instead of the throughput sequence.
+    { path: '/startup', component: Benchmark },
   ],
   hooks: {
     async ready() {

@@ -7,6 +7,7 @@ import { createShader } from 'ftl/shaders/create';
 
 import { adjectives, nouns } from '../../shared/data.js';
 import { warmup } from '../../shared/utils/warmup.js';
+import { reportStartup } from '../../shared/utils/startup.js';
 import { run } from '../../shared/utils/run.js';
 
 const shaders = {
@@ -301,6 +302,18 @@ const createMemoryBenchmark = async () => {
   console.log('Memory!', results);
 };
 
+const runStartupBenchmark = async () => {
+  // Cold startup: navigation start -> first idle after rendering 1,000 rows.
+  // waitUntilIdle resolves `performance.now() - startTime`, so a startTime of 0
+  // yields time since navigation start: JS download/parse/execute, framework
+  // init, bitmap font load and scene build are all included. Runs after
+  // fontLoadedPromise resolves, same as the regular benchmark.
+  const startupPromise = waitUntilIdle(0);
+  for (let i = 0; i < 1000; i++) createRow(rootNode, i);
+  const time = await startupPromise;
+  reportStartup(time);
+};
+
 const runBenchmark = async () => {
   const results = {};
 
@@ -358,6 +371,8 @@ const hash = window.location.hash.substring(1);
 fontLoadedPromise.then(() => {
   if (hash === 'memory') {
     createMemoryBenchmark();
+  } else if (hash === 'startup') {
+    runStartupBenchmark();
   } else {
     runBenchmark();
   }

@@ -17,11 +17,13 @@
 
 import Blits from '@lightningjs/blits'
 import { warmup } from '../../../../shared/utils/warmup.js'
+import { reportStartup } from '../../../../shared/utils/startup.js'
 import {
   clearTest,
   sequence,
   printResults,
   createMany,
+  createStartup,
   updateMany,
   updateRandom,
   swapRows,
@@ -56,6 +58,15 @@ export default Blits.Component('Benchmark', {
   },
   hooks: {
     async ready() {
+      // `#startup` shares the `/` route (hash only), so branch here instead
+      // of adding a route: single cold load of 1,000 rows, timed from
+      // navigation start to first idle (see createStartup in perf.js).
+      const hash = window.location.hash.substring(1);
+      if (hash === 'startup') {
+        const { time } = await createStartup.call(this, 1000)
+        reportStartup(time)
+        return
+      }
       sequence([
         () => this.testCreateMany(),
         () => this.testUpdateMany(),

@@ -6,6 +6,7 @@ import Lightning from '@lightningjs/core';
 
 import { adjectives, nouns } from '../../shared/data.js';
 import { warmup } from '../../shared/utils/warmup.js';
+import { reportStartup } from '../../shared/utils/startup.js';
 import { run } from '../../shared/utils/run.js';
 
 // apply CSS styling
@@ -129,6 +130,9 @@ export class App extends Lightning.Application {
         if (hash === 'memory') {
             console.log('Running memory benchmark');
             this.createMemoryBenchmark();
+        } else if (hash === 'startup') {
+            console.log('Running startup benchmark');
+            this.runStartupBenchmark();
         } else {
             this.runBenchmark();
         }
@@ -381,6 +385,23 @@ export class App extends Lightning.Application {
         });
     
         console.log('Done!', results);
+    }
+
+    async runStartupBenchmark() {
+        // Cold startup: navigation start -> first stage idle after rendering
+        // 1,000 rows. Items is empty on fresh load; a startTime of 0 makes
+        // waitUntilIdle resolve with `performance.now()`, i.e. time since
+        // navigation start, so JS download/parse/execute and framework init
+        // are included.
+        const startupPromise = this.waitUntilIdle(0);
+
+        const items = this.tag('Items');
+        for (let i = 0; i < 1000; i++) {
+            this._createRow(items, i);
+        }
+
+        const time = await startupPromise;
+        reportStartup(time);
     }
 
     async createMemoryBenchmark() {

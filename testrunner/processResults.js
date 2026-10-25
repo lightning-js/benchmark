@@ -4,13 +4,15 @@
  * @typedef {import('./types/results.js').Results} Results
  * @typedef {import('./types/memoryResults.js').MemoryResults} MemoryResults
  * @typedef {import('./types/fileSizeResults.js').FileSizeResults} FileSizeResultsObject
+ * @typedef {import('./types/startupResults.js').StartupResults} StartupResultsObject
  * 
  * @param {Results} results - The benchmark results object.
  * @param {MemoryResults} memoryResults - The memory results object.
  * @param {FileSizeResultsObject} fileSizeResults - The file size results object.
+ * @param {StartupResultsObject} [startupResults] - The startup results object.
  * @returns {Object} - The processed and sorted results object.
  */
-export const processResults = (results, memoryResults, fileSizeResults) => {
+export const processResults = (results, memoryResults, fileSizeResults, startupResults = {}) => {
     const processedResults = {};
     const fastestTimes = {
         create: null,
@@ -93,6 +95,16 @@ export const processResults = (results, memoryResults, fileSizeResults) => {
         processedResults[f].fileSize = (fileSizeResults[f] / 1024).toFixed(2);
     });
 
+    // add startup results (cold load to first frame, reported separately and
+    // deliberately excluded from avgMean). Uses a plain relative mean against
+    // the fastest framework rather than the Krause op weights.
+    const { cells: startupCells } = buildStartupCells(frameworks, startupResults);
+    frameworks.forEach(f => {
+        if (startupCells[f]) {
+            processedResults[f].startup = startupCells[f];
+        }
+    });
+
     // sort the frameworks by avgMean
     const sortedFrameworks = frameworks.sort((a, b) => {
         return processedResults[a].avgMean - processedResults[b].avgMean;
@@ -105,6 +117,107 @@ export const processResults = (results, memoryResults, fileSizeResults) => {
     });
 
     return sortedResults;
+}
+
+/**
+ * Processes only startup results (used by `--startup-only` runs, where no
+ * throughput/memory results exist). Returns per-framework startup cells plus
+ * bundle sizes, sorted by startup mean (fastest first). Frameworks whose
+ * startup failed get no `startup` cell, same as in the full report.
+ *
+ * @typedef {import('./types/fileSizeResults.js').FileSizeResults} FileSizeResultsObject
+ * @typedef {import('./types/startupResults.js').StartupResults} StartupResultsObject
+ *
+ * @param {StartupResultsObject} startupResults - The startup results object.
+ * @param {FileSizeResultsObject} [fileSizeResults] - The file size results object.
+ * @returns {Object} - The processed startup-only results object, in the same
+ * shape as `processResults` output (per-framework `startup`/`fileSize` cells).
+ */
+export const processStartupResults = (startupResults, fileSizeResults = {}) => {
+    const frameworks = Object.keys(startupResults);
+    const { cells } = buildStartupCells(frameworks, startupResults);
+
+    const processedResults = {};
+    frameworks.forEach(f => {
+        processedResults[f] = {};
+        if (cells[f]) {
+            processedResults[f].startup = cells[f];
+        }
+        if (fileSizeResults[f] !== undefined) {
+            processedResults[f].fileSize = (fileSizeResults[f] / 1024).toFixed(2);
+        }
+    });
+
+    // sort fastest startup first; frameworks without a startup cell go last
+    const sortedFrameworks = frameworks.sort((a, b) => {
+        const aMean = processedResults[a].startup ? parseFloat(processedResults[a].startup.mean) : Infinity;
+        const bMean = processedResults[b].startup ? parseFloat(processedResults[b].startup.mean) : Infinity;
+        return aMean - bMean;
+    });
+
+    const sortedResults = {};
+    sortedFrameworks.forEach(f => {
+        sortedResults[f] = processedResults[f];
+    });
+
+    return sortedResults;
+}
+
+/**
+ * Builds the per-framework startup report cells shared by the full and the
+ * startup-only reports. Uses a plain relative mean against the fastest
+ * framework (no Krause op weights).
+ *
+ * @param {string[]} frameworks - Framework names.
+ * @param {Object} startupResults - Raw startup results per framework.
+ * @returns {{cells: Object, fastestStartup: (number|null)}}
+ */
+const buildStartupCells = (frameworks, startupResults) => {
+    let fastestStartup = null;
+    (frameworks || []).forEach(f => {
+        if (!startupResults[f]) {
+            return;
+        }
+
+        const current = parseFloat(startupResults[f].startup);
+        if (!Number.isFinite(current) || current < 0) {
+            return;
+        }
+
+        if (fastestStartup === null || current < fastestStartup) {
+            fastestStartup = current;
+        }
+    });
+
+    const cells = {};
+    (frameworks || []).forEach(f => {
+        if (!startupResults[f] || fastestStartup === null) {
+            return;
+        }
+
+        const value = parseFloat(startupResults[f].startup);
+        if (!Number.isFinite(value) || value < 0) {
+            cells[f] = {
+                mean: '-1',
+                color: computeColor(1),
+                time: 'Failed',
+                min: -1,
+                runs: [],
+            };
+            return;
+        }
+
+        const mean = calculateMean(value, fastestStartup);
+        cells[f] = {
+            mean: mean.toFixed(2),
+            color: computeColor(mean),
+            time: startupResults[f].startup,
+            min: startupResults[f].min ?? -1,
+            runs: startupResults[f].runs ?? [],
+        };
+    });
+
+    return { cells, fastestStartup };
 }
 
 /**

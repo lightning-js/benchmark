@@ -59,7 +59,12 @@ const test = () => {
         solid: 512
     }
 
-    const processedResults = processResults(results, memoryResults, fileSize);
+    const startupResults = {
+        renderer: { startup: '1200.00ms ±100.00', average: 1200, spread: 100, min: 1150, runs: [1150, 1200, 1250], wallAverage: 1300 },
+        solid: { startup: '1500.00ms ±120.00', average: 1500, spread: 120, min: 1440, runs: [1440, 1500, 1560], wallAverage: 1600 }
+    }
+
+    const processedResults = processResults(results, memoryResults, fileSize, startupResults);
     console.log(JSON.stringify(processedResults));
     console.log(processedResults);
 

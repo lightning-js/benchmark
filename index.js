@@ -24,7 +24,8 @@
 import fs from "fs";
 import shell from 'shelljs';
 import { runBenchmark, getBrowserVersion } from "./testrunner/runBenchmark.js";
-import { processResults } from "./testrunner/processResults.js";
+import { runStartupBenchmark } from "./testrunner/runStartup.js";
+import { processResults, processStartupResults } from "./testrunner/processResults.js";
 import { writeResults } from "./testrunner/writeResults.js";
 import { getJavaScriptBundleSize } from "./testrunner/totalBundlefileSize.js";
 
@@ -38,6 +39,13 @@ let writeOfficialResultsFlag = false;
 if (args.includes('--results') || args.includes('-r')) {
     writeOfficialResultsFlag = true;
 }
+
+/**
+ * Check for --startup-only argument: run only the cold-startup benchmark
+ * (plus bundle sizes) and skip the throughput and memory benchmarks.
+ * Useful for validating the startup functionality quickly.
+ */
+const startupOnlyFlag = args.includes('--startup-only');
 
 /**
  * Checks if the './dist' directory exists.
@@ -131,6 +139,7 @@ dirs.forEach( (f) => {
  * @typedef {import('./testrunner/types/results.js').Results} Results
  * @typedef {import('./testrunner/types/memoryResults.js').MemoryResults} MemoryResults
  * @typedef {import('./testrunner/types/fileSizeResults.js').FileSizeResults} FileSizeResults
+ * @typedef {import('./testrunner/types/startupResults.js').StartupResults} StartupResults
  * 
  * @typedef {?Results} results
  */
@@ -147,6 +156,12 @@ let memoryResults = null;
  * @typedef {?FileSizeResults} fileSizeResults
 */
 let fileSizeResults = null;
+
+/**
+ * The startup results object.
+ * @typedef {?StartupResults} startupResults
+*/
+let startupResults = null;
 let idx = 0;
 
 /**
@@ -182,17 +197,27 @@ const run = async (dir) => {
     if (results === null) results = {};
     if (memoryResults === null) memoryResults = {};
     if (fileSizeResults === null) fileSizeResults = {};
+    if (startupResults === null) startupResults = {};
 
     results[dir] = createNewResult();
 
-    console.log(`Running benchmark for ${dir}`);
-    const result = await runBenchmark(`http://localhost:8080/${dir}/`);
-    results[dir] = result;
+    if (!startupOnlyFlag) {
+        console.log(`Running benchmark for ${dir}`);
+        const result = await runBenchmark(`http://localhost:8080/${dir}/`);
+        results[dir] = result;
 
-    // run memory benchmark
-    console.log(`Running memory benchmark for ${dir}`);
-    const memoryResult = await runBenchmark(`http://localhost:8080/${dir}/#memory`);
-    memoryResults[dir] = memoryResult;
+        // run memory benchmark
+        console.log(`Running memory benchmark for ${dir}`);
+        const memoryResult = await runBenchmark(`http://localhost:8080/${dir}/#memory`);
+        memoryResults[dir] = memoryResult;
+    } else {
+        console.log(`Skipping throughput and memory benchmarks for ${dir} (--startup-only)`);
+    }
+
+    // run startup benchmark (cold load to first frame, fresh context per run)
+    console.log(`Running startup benchmark for ${dir}`);
+    const startupResult = await runStartupBenchmark(`http://localhost:8080/${dir}/`);
+    startupResults[dir] = startupResult;
 
     // get the total size of the javascript bundle
     console.log(`Getting total size of the javascript bundle for ${dir}`);
@@ -211,10 +236,36 @@ const run = async (dir) => {
         console.log('Memory results:');
         console.log(memoryResults);
 
+        console.log('Startup results:');
+        console.log(startupResults);
+
         console.log('File size results:');
         console.log(fileSizeResults);
 
-        const processedResults = processResults(results, memoryResults, fileSizeResults);
+        if (startupOnlyFlag) {
+            const processedStartup = processStartupResults(startupResults, fileSizeResults);
+            console.log('Processed startup results:');
+            console.log(processedStartup);
+            console.table(Object.fromEntries(
+                Object.entries(processedStartup).map(([fw, r]) => [fw, {
+                    startup: r.startup?.time ?? 'Failed',
+                    mean: r.startup?.mean ?? '-',
+                    min: r.startup && r.startup.min >= 0 ? `${r.startup.min.toFixed(2)}ms` : '-',
+                    runs: r.startup?.runs?.length ?? 0,
+                    bundleKB: r.fileSize ?? 'n/a',
+                }])
+            ));
+
+            console.log('Writing results...');
+            const filename = await writeResults(processedStartup, frameworkVersions, browserVersion);
+
+            if (writeOfficialResultsFlag) {
+                writeOfficialResults(filename);
+            }
+            return;
+        }
+
+        const processedResults = processResults(results, memoryResults, fileSizeResults, startupResults);
         console.log('Processed results:');
         console.log(processedResults);
 
