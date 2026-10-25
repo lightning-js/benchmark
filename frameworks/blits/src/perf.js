@@ -125,6 +125,32 @@ const createMany = function (amount) {
   })
 }
 
+const createStartup = function (amount = 1000) {
+  return new Promise((resolve) => {
+    // Cold startup: navigation start -> first idle after rendering `amount`
+    // rows. A startTime of 0 makes waitUntilIdle resolve with
+    // `performance.now()`, i.e. time since navigation start, so JS
+    // download/parse/execute, framework init and font load are all included.
+    // No clear() first: items are empty on fresh load.
+    waitUntilIdle(renderer, 0).then((time) => {
+      resolve({ time })
+    })
+
+    const items = []
+
+    let x = 0
+    let y = 0
+    for (let i = 1; i < amount + 1; i++) {
+      items.push(createItem(x, y))
+
+      x = (i % 27) * 40
+      y = ~~(i / 27) * 40
+    }
+
+    this.items = items
+  })
+}
+
 const createManyWithoutText = function (amount = 20000) {
   return new Promise((resolve) => {
     clear.call(this).then(() => {
@@ -242,6 +268,7 @@ export {
   printResults,
   createMany,
   createManyWithoutText,
+  createStartup,
   updateMany,
   updateRandom,
   swapRows,

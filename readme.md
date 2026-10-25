@@ -16,6 +16,15 @@ The following operations will be executed:
 - Remove row, remove 1 row (5 warm up runs)
 - Create many rows, create 10,000 rows (5 warmup runs)
 - Append rows to large table, appending 1,000 rows to a table of 1,000 rows (5 warmup runs)
+- Cold startup, load the app and render 1,000 rows to the first frame (7 cold loads, fresh browser context per run, 6x CPU slowdown applied before navigation so JS fetch/parse is included; reported separately from the throughput average)
+
+To run only the startup benchmark (skips the throughput and memory benchmarks, useful for validating startup functionality), serve `dist/` and pass the flag directly to the runner:
+
+`npx http-server -c-1 ./dist/` (terminal 1)
+
+`node index.js --startup-only` (terminal 2, combine with `--results` to also copy to `official_results/`)
+
+Tune the number of cold loads per framework with `STARTUP_RUNS` (default 7) and force headless Chromium with `HEADLESS=true`.
 
 ## Why not use js-framework-benchmark
 

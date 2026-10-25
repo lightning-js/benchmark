@@ -22,6 +22,7 @@ import { WebGlCoreRenderer, SdfTextRenderer } from '@lightningjs/renderer/webgl'
 import { colours, adjectives, nouns } from '../../shared/data.js';
 import { warmup } from '../../shared/utils/warmup.js';
 import { waitUntilIdle } from '../../shared/utils/waitUntilIdle.js';
+import { reportStartup } from '../../shared/utils/startup.js';
 import { run } from '../../shared/utils/run.js';
 
 const appHeight = 1080;
@@ -294,6 +295,26 @@ const createMemoryBenchmark = async () => {
     console.log('Memory!', results);
 }
 
+const runStartupBenchmark = async () => {
+    // Cold startup: navigation start -> first idle after rendering 1,000 rows.
+    // A startTime of 0 makes waitUntilIdle resolve with `performance.now()`,
+    // i.e. time since navigation start, so JS download/parse/execute,
+    // framework init and font atlas load are all included.
+    const startupPromise = waitUntilIdle(renderer, 0);
+
+    for (let i = 0; i < 1000; i++) {
+        createRow(rootNode, {
+            index: i,
+            color: pick(colours),
+            textColor: pick(colours),
+            text: `${pick(adjectives)} ${pick(nouns)}`
+        });
+    }
+
+    const time = await startupPromise;
+    reportStartup(time);
+}
+
 const runBenchmark = async () => {
     const results = {};
 
@@ -373,6 +394,9 @@ const hash = window.location.hash.substring(1);
 if (hash === 'memory') {
     console.log('Running memory benchmark');
     createMemoryBenchmark();
+} else if (hash === 'startup') {
+    console.log('Running startup benchmark');
+    runStartupBenchmark();
 } else {
     runBenchmark();
 }

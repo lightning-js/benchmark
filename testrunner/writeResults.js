@@ -70,13 +70,19 @@ const header = `<div>
 
 const resultsHeader = `<div>
     <h2>Results</h2>
-    <p>Tests are run by executing an operation and waiting for the WebGL rennder to be Idle</p>
-    <p>Results are the time in milliseconds to execute the operation</p>
-    <p>All operations are executed on 6x CPU slowdown</p>
+    {{resultsDescription}}
 </div>`;
 
+const opsDescription = `
+    <p>Tests are run by executing an operation and waiting for the WebGL rennder to be Idle</p>
+    <p>Results are the time in milliseconds to execute the operation</p>
+    <p>All operations are executed on 6x CPU slowdown</p>`;
 
-const table = `<table>
+const startupDescription = `
+    <p>Startup is measured from navigation start to the first idle after rendering 1,000 nodes (fresh browser context per run, 6x CPU slowdown applied before navigation, so JS fetch/parse is included)</p>`;
+
+
+const opsSection = `
     <thead>
         <tr>
             <th>
@@ -159,7 +165,9 @@ const table = `<table>
             </th>
             {{overall}}
         </tr>
-    </tbody>
+    </tbody>`;
+
+const memorySection = `
     <thead>
         <tr>
             <th>
@@ -178,7 +186,30 @@ const table = `<table>
             </th>
             {{rowsMemory}}
         </tr>
-    </tbody>
+    </tbody>`;
+
+const startupSection = `
+    <thead>
+        <tr>
+            <th>
+                <b>Name</b>
+                <br>
+                Startup for...
+            </th>
+            {{frameworks}}
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <th>
+                <b>cold startup</b>
+                <div>cold load to first frame of 1,000 nodes. Includes JS fetch/parse, font atlas and first idle. Fresh context per run.</div>
+            </th>
+            {{rowsStartup}}
+        </tr>
+    </tbody>`;
+
+const fileSizeSection = `
     <thead>
         <tr>
             <th>
@@ -197,7 +228,13 @@ const table = `<table>
             </th>
             {{rowsSize}}
         </tr>
-    </tbody>
+    </tbody>`;
+
+// Single table: all sections share the same column widths, so framework
+// columns stay aligned across ops / memory / startup / file-size rows.
+// Only sections with data are included.
+const table = `<table>
+{{sections}}
 </table>`;
 
 const createFile = (filename) => {
@@ -210,7 +247,9 @@ const createFile = (filename) => {
 }
 
 /**
- * Writes benchmark results to an HTML file.
+ * Writes benchmark results to a single HTML file.
+ * Only sections with data are rendered, so both full runs and
+ * `--startup-only` runs produce the same `results_*.html` file.
  * @param {Object} results - The benchmark results.
  * @param {Object} frameworkVersions - The versions of the frameworks used in the benchmark.
  * @param {string} browserVersion - The version of the browser used for the benchmark.
@@ -240,25 +279,39 @@ export const writeResults = (results, frameworkVersions, browserVersion) => {
             .replace('{{browserVersion}}', browserVersion)
         );
 
-        // write the results header
-        fileStream.write(resultsHeader);
-
         const frameworks = Object.keys(results);
-        const frameworkNamesAndVersions = frameworks.map(f => `${f} ${frameworkVersions[f]}`);
+        const frameworkNamesAndVersions = frameworks.map(f => `${f} ${frameworkVersions[f] ?? ''}`);
+
+        const hasOps = frameworks.some(f => results[f].create);
+        const hasMemory = frameworks.some(f => results[f].memory);
+        const hasStartup = frameworks.some(f => results[f].startup);
+        const hasFileSize = frameworks.some(f => results[f].fileSize !== undefined);
+
+        // write the results header with only the relevant descriptions
+        fileStream.write(resultsHeader.replace('{{resultsDescription}}',
+            `${hasOps ? opsDescription : ''}${hasStartup ? startupDescription : ''}`
+        ));
 
         // write some html
         const frameworksHeader = frameworkNamesAndVersions.map(f => `<th>${f}</th>`).join('');
-        const createRows = frameworks.map(f => `<td style="background-color: ${results[f].create.color}; color: rgb(0, 0, 0);">${results[f].create.time} (${results[f].create.mean})</td>`).join('');
-        const updateRows = frameworks.map(f => `<td style="background-color: ${results[f].update.color}; color: rgb(0, 0, 0);">${results[f].update.time} (${results[f].update.mean})</td>`).join('');
-        const partialUpdateRows = frameworks.map(f => `<td style="background-color: ${results[f].skipNth.color}; color: rgb(0, 0, 0);">${results[f].skipNth.time} (${results[f].skipNth.mean})</td>`).join('');
-        const selectRow = frameworks.map(f => `<td style="background-color: ${results[f].select.color}; color: rgb(0, 0, 0);">${results[f].select.time} (${results[f].select.mean})</td>`).join('');
-        const swapRows = frameworks.map(f => `<td style="background-color: ${results[f].swap.color}; color: rgb(0, 0, 0);">${results[f].swap.time} (${results[f].swap.mean})</td>`).join('');
-        const removeRow = frameworks.map(f => `<td style="background-color: ${results[f].remove.color}; color: rgb(0, 0, 0);">${results[f].remove.time} (${results[f].remove.mean})</td>`).join('');
-        const createManyRows = frameworks.map(f => `<td style="background-color: ${results[f].createLots.color}; color: rgb(0, 0, 0);">${results[f].createLots.time} (${results[f].createLots.mean})</td>`).join('');
-        const appendRows = frameworks.map(f => `<td style="background-color: ${results[f].append.color}; color: rgb(0, 0, 0);">${results[f].append.time} (${results[f].append.mean})</td>`).join('');
-        const clearRows = frameworks.map(f => `<td style="background-color: ${results[f].clear.color}; color: rgb(0, 0, 0);">${results[f].clear.time} (${results[f].clear.mean})</td>`).join('');
-        const overall = frameworks.map(f => `<td>${results[f].avgMean}</td>`).join('');
-        const rowsSize = frameworks.map(f => `<td>${results[f].fileSize} KB</td>`).join('');
+        const opCell = (f, key) => {
+            const entry = results[f][key];
+            if (entry && entry.time !== undefined) {
+                return `<td style="background-color: ${entry.color}; color: rgb(0, 0, 0);">${entry.time} (${entry.mean})</td>`;
+            }
+            return `<td>n/a</td>`;
+        };
+        const createRows = frameworks.map(f => opCell(f, 'create')).join('');
+        const updateRows = frameworks.map(f => opCell(f, 'update')).join('');
+        const partialUpdateRows = frameworks.map(f => opCell(f, 'skipNth')).join('');
+        const selectRow = frameworks.map(f => opCell(f, 'select')).join('');
+        const swapRows = frameworks.map(f => opCell(f, 'swap')).join('');
+        const removeRow = frameworks.map(f => opCell(f, 'remove')).join('');
+        const createManyRows = frameworks.map(f => opCell(f, 'createLots')).join('');
+        const appendRows = frameworks.map(f => opCell(f, 'append')).join('');
+        const clearRows = frameworks.map(f => opCell(f, 'clear')).join('');
+        const overall = frameworks.map(f => `<td>${results[f].avgMean ?? 'n/a'}</td>`).join('');
+        const rowsSize = frameworks.map(f => `<td>${results[f].fileSize ?? 'n/a'} KB</td>`).join('');
         const rowsMemory = frameworks.map(f => {
             if (results[f].memory && (results[f].memory.memory !== 'NaN' || results[f].memory.time !== -1)) {
                 return `<td>${results[f].memory.memory}MB (created in ${results[f].memory.time}ms)</td>`
@@ -266,24 +319,59 @@ export const writeResults = (results, frameworkVersions, browserVersion) => {
                 return `<td>Failed</td>`;
             }
         }).join('');
+        const rowsStartup = frameworks.map(f => {
+            const startup = results[f].startup;
+            if (startup && startup.time && startup.time !== 'Failed') {
+                const detail = startup.min >= 0 && startup.runs
+                    ? ` (min ${startup.min.toFixed(2)}ms, n=${startup.runs.length})`
+                    : '';
+                return `<td style="background-color: ${startup.color}; color: rgb(0, 0, 0);">${startup.time} (${startup.mean})${detail}</td>`;
+            } else {
+                return `<td>Failed</td>`;
+            }
+        }).join('');
 
-        fileStream.write(table
-            .replace('{{frameworks}}', frameworksHeader)
-            .replace('{{createRows}}', createRows)
-            .replace('{{updateRows}}', updateRows)
-            .replace('{{partialUpdateRows}}', partialUpdateRows)
-            .replace('{{selectRow}}', selectRow)
-            .replace('{{swapRows}}', swapRows)
-            .replace('{{removeRow}}', removeRow)
-            .replace('{{createManyRows}}', createManyRows)
-            .replace('{{appendRows}}', appendRows)
-            .replace('{{clearRows}}', clearRows)
-            .replace('{{overall}}', overall)
-            .replace('{{frameworks}}', frameworksHeader)
-            .replace('{{rowsMemory}}', rowsMemory)
-            .replace('{{frameworks}}', frameworksHeader)
-            .replace('{{rowsSize}}', rowsSize)
-        );
+        // Sections are assembled into a single table so framework columns
+        // share widths and stay aligned across ops / memory / startup rows.
+        const sections = [];
+        if (hasOps) {
+            sections.push(opsSection
+                .replace('{{frameworks}}', frameworksHeader)
+                .replace('{{createRows}}', createRows)
+                .replace('{{updateRows}}', updateRows)
+                .replace('{{partialUpdateRows}}', partialUpdateRows)
+                .replace('{{selectRow}}', selectRow)
+                .replace('{{swapRows}}', swapRows)
+                .replace('{{removeRow}}', removeRow)
+                .replace('{{createManyRows}}', createManyRows)
+                .replace('{{appendRows}}', appendRows)
+                .replace('{{clearRows}}', clearRows)
+                .replace('{{overall}}', overall)
+            );
+        }
+
+        if (hasMemory) {
+            sections.push(memorySection
+                .replace('{{frameworks}}', frameworksHeader)
+                .replace('{{rowsMemory}}', rowsMemory)
+            );
+        }
+
+        if (hasStartup) {
+            sections.push(startupSection
+                .replace('{{frameworks}}', frameworksHeader)
+                .replace('{{rowsStartup}}', rowsStartup)
+            );
+        }
+
+        if (hasFileSize) {
+            sections.push(fileSizeSection
+                .replace('{{frameworks}}', frameworksHeader)
+                .replace('{{rowsSize}}', rowsSize)
+            );
+        }
+
+        fileStream.write(table.replace('{{sections}}', sections.join('\n')));
         
         // write the footer
         fileStream.write(indexFooter);
@@ -297,3 +385,4 @@ export const writeResults = (results, frameworkVersions, browserVersion) => {
         });
     }); 
 }
+
