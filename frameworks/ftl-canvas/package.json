@@ -14,6 +14,9 @@
     "ftl": "file:../../../ftl"
   },
   "devDependencies": {
-    "vite": "^6.4.3"
+    "vite": "^6.4.4"
+  },
+  "overrides": {
+    "source-map-js": "1.2.2"
   }
 }

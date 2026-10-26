@@ -14,7 +14,10 @@
     "ftl": "file:../../../ftl"
   },
   "devDependencies": {
-    "vite": "^6.4.3",
+    "vite": "^6.4.4",
     "vite-plugin-static-copy": "^3.2.0"
+  },
+  "overrides": {
+    "source-map-js": "1.2.2"
   }
 }
