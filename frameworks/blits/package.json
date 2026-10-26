@@ -30,12 +30,14 @@
     "husky": "^7.0.4",
     "lint-staged": "^12.3.3",
     "prettier": "^2.5.1",
-    "vite": "^6.4.3"
+    "vite": "^6.4.4"
   },
   "dependencies": {
     "@lightningjs/blits": "2.14.0"
   },
   "overrides": {
-    "handlebars": "4.7.9"
+    "handlebars": "4.7.10",
+    "brace-expansion": "1.1.21",
+    "source-map-js": "1.2.2"
   }
 }
