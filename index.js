@@ -332,7 +332,8 @@ const writeOfficialResults = (filename) => {
     // Add the new result to the JSON object
     const blitsVersion = 'Blits ' + frameworkVersions['blits'] || '';
     const rendererVersion = 'Renderer ' + frameworkVersions['renderer'] || '';
-    const version = `${formattedDate} ${blitsVersion} ${rendererVersion} ${browserVersion}`;
+    const ftlVersion = frameworkVersions['ftl'] ? `FTL ${frameworkVersions['ftl']} ` : '';
+    const version = `${formattedDate} ${blitsVersion} ${rendererVersion} ${ftlVersion}${browserVersion}`;
 
     // Make sure a repeated run on the same day with identical versions gets its own entry
     let versionKey = version;
