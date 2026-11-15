@@ -194,7 +194,7 @@ const updateMany = (count, skip = 0) => new Promise((resolve) => {
     if (!element || !element.children?.[0]) continue;
     element.color = pick(colours);
     const child = element.children[0];
-    child.texture = createText({
+    child.text = createText({
       fontFamily: 'Ubuntu',
       alpha: 0.8,
       type: 1,
@@ -259,7 +259,7 @@ const selectRandomNode = () => new Promise((resolve) => {
 
   node.children[0].x = 10;
   node.children[0].y = 10;
-  node.children[0].texture = createText({
+  node.children[0].text = createText({
     fontFamily: 'Ubuntu',
     fontSize: 128,
     text: `${pick(adjectives)} ${pick(nouns)}`,
