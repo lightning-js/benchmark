@@ -26,6 +26,87 @@ To run only the startup benchmark (skips the throughput and memory benchmarks, u
 
 Tune the number of cold loads per framework with `STARTUP_RUNS` (default 7) and force headless Chromium with `HEADLESS=true`.
 
+## Rectangle rendering benchmark
+
+Rectangle rendering is included automatically in the **full benchmark run**
+(`npm start` and `npm run start:official`). Each framework completes its
+throughput, memory, startup, bundle, and rectangle tests before the runner moves
+to the next framework. A rectangle FPS section is added to the same HTML
+results overview. Official HTML copies
+include the FPS, failures, and expandable raw diagnostics. Rectangle FPS is
+reported separately and does not change the duration-based weighted score.
+`--startup-only` skips rectangle rendering.
+
+The rectangle benchmark measures steady-state FPS while 4,000, 8,000, and
+16,000 seeded, mixed-size rectangles with a 1px black border and white fill
+move through a 1000x540 drawing area in a 1280x720 viewport, like the
+canvas-engines comparison. Each count is run as an independent slice with the
+same generated positions and per-frame horizontal movement for every enabled
+framework. FPS counts each framework's render-frame/tick callback, not browser
+`requestAnimationFrame` callbacks. Each count has a 1-second warmup followed by
+three 1.5-second FPS samples. Like the other benchmarks, each slice applies
+**6x CPU throttling before navigation** (recorded as `cpuThrottlingRate: 6`). Results are saved as
+`results/rectangles_<timestamp>.json` and printed as a table. All framework
+directories enabled in `.env` and included in `dist/` are tested.
+Both L2 variants also run an independent RAF counter over each FPS sample's
+exact time window. The JSON includes `rafFps` and `rafChecks` (frame-event count,
+RAF count, elapsed time, and both rates) to cross-check the `frameStart` counter.
+The RAF observer does not move the scene or perform rendering.
+
+Average FPS is not a smoothness or presented-frame guarantee. `measurements`
+also record `meterFps` using the comparison's FPSMeter interval-smoothing formula
+(factor 10), plus `framePacing` with median/p95/p99/max callback intervals and
+counts of gaps over 25ms and 50ms. Slow frames can be visible even if average FPS
+is close to 60. Neither counter waits for GPU completion or measures display
+presentation; the comparison's FPSMeter has the same limitation.
+
+Blits constructs one native-border Element per square in a stable keyed list,
+then updates cached Elements with `set('x', ...)`, without triggering the entire
+list each frame. This deliberately measures Blits' Element API, not list
+reconciliation. This follows the documented [loop refs](https://www.lightningjs.io/v3-docs/blits/built-in/for-loop.html#referencing-elements-in-the-for-loop)
+and [border attribute](https://www.lightningjs.io/v3-docs/blits/shaders/v2-conversion-guide.html#border).
+`sceneValidation` verifies that node count and identities stay constant during
+movement, outside the timed samples.
+The generated scene and drawing area must have the same dimensions: generating
+a larger scene causes offscreen culling and misleadingly high FPS. Scene bounds
+and count replacement are covered by `node --test tests/rectangleBenchmark.test.js`.
+Each framework runs in its own browser process. A page error, renderer crash, or
+timeout is recorded as a failure and does not stop the remaining frameworks;
+each framework/count slice uses a fresh browser process, with a default timeout
+of 10 minutes (`RECTANGLE_TIMEOUT_MS`). A crash at one count does not stop the
+other counts or frameworks.
+Per-count results are saved as soon as each slice finishes. A failed count is
+recorded as 0 FPS with its error, while completed earlier counts are retained.
+The default counts stop at 16,000 because both Lightning 2 variants and both
+L3 renderer variants (`renderer`, `renderer-local`) reject counts above
+16,000 before creating elements (16-bit quad indices wrap past 16,384 slots).
+If higher counts are configured via `RECTANGLE_COUNTS`, those slices are
+reported as unsupported failures (0 FPS).
+
+Build the enabled frameworks and serve `dist/` in one terminal:
+
+```sh
+npm run build
+npx http-server -c-1 ./dist/
+```
+
+Then run the full suite in another terminal:
+
+```sh
+node index.js
+```
+
+For focused troubleshooting, `npm run rectangles` (or `node index.js
+--rectangles`) still runs only the rectangle suite and saves its raw JSON.
+
+Set `HEADLESS=true` to run Chromium headlessly. For representative performance
+results, use the same browser, viewport, display scaling and hardware across
+runs; browser refresh-rate limits can cap the reported FPS. The runner also
+accepts `RECTANGLE_FRAMEWORKS=ftl,renderer` to select a subset and
+`RECTANGLE_COUNTS=8000,16000` to select counts. `RECTANGLE_WARMUP_MS`,
+`RECTANGLE_SAMPLE_MS`, and `RECTANGLE_SAMPLES` adjust the sample timings (use
+short values for a smoke test, not for comparable performance results).
+
 ## Why not use js-framework-benchmark
 
 Two reasons:
@@ -78,4 +159,3 @@ As of v0.0.2 the Lightning Benchmark implements weighted mean results for differ
 | createLots | 0.56 |
 | append | 0.55 |
 | clear | 0.42 |
-

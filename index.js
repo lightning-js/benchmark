@@ -28,6 +28,7 @@ import { runStartupBenchmark } from "./testrunner/runStartup.js";
 import { processResults, processStartupResults } from "./testrunner/processResults.js";
 import { writeResults } from "./testrunner/writeResults.js";
 import { getJavaScriptBundleSize } from "./testrunner/totalBundlefileSize.js";
+import { runRectangleBenchmarks } from "./testrunner/runRectangles.js";
 
 
 /**
@@ -46,6 +47,7 @@ if (args.includes('--results') || args.includes('-r')) {
  * Useful for validating the startup functionality quickly.
  */
 const startupOnlyFlag = args.includes('--startup-only');
+const rectanglesOnlyFlag = args.includes('--rectangles');
 
 /**
  * Checks if the './dist' directory exists.
@@ -162,6 +164,7 @@ let fileSizeResults = null;
  * @typedef {?StartupResults} startupResults
 */
 let startupResults = null;
+const rectangleResults = {};
 let idx = 0;
 
 /**
@@ -169,6 +172,11 @@ let idx = 0;
  */
 const browserVersion = await getBrowserVersion();
 console.log('Browser version:', browserVersion);
+
+if (rectanglesOnlyFlag) {
+    await runRectangleBenchmarks(dirs, browserVersion);
+    process.exit(0);
+}
 
 /**
  * Initializes the results object.
@@ -224,11 +232,17 @@ const run = async (dir) => {
     const fileSize = getJavaScriptBundleSize(`./dist/${dir}`);
     fileSizeResults[dir] = fileSize;
 
+    if (!startupOnlyFlag) {
+        console.log(`Running rectangle rendering benchmarks for ${dir}...`);
+        const frameworkRectangles = await runRectangleBenchmarks([dir], browserVersion);
+        Object.assign(rectangleResults, frameworkRectangles.results);
+    }
+
     idx++;
     if (idx < dirs.length) {
-        run(dirs[idx]);
+        await run(dirs[idx]);
     } else {
-        console.log('All benchmarks done!');
+        console.log('All framework benchmarks done!');
 
         console.log('Benchmark results:');
         console.log(results);
@@ -265,7 +279,8 @@ const run = async (dir) => {
             return;
         }
 
-        const processedResults = processResults(results, memoryResults, fileSizeResults, startupResults);
+        const processedResults = processResults(results, memoryResults, fileSizeResults, startupResults, rectangleResults);
+        console.log('All benchmarks done!');
         console.log('Processed results:');
         console.log(processedResults);
 

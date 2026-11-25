@@ -24,14 +24,16 @@ import { warmup } from '../../shared/utils/warmup.js';
 import { waitUntilIdle } from '../../shared/utils/waitUntilIdle.js';
 import { reportStartup } from '../../shared/utils/startup.js';
 import { run } from '../../shared/utils/run.js';
+import { runRendererRectangleBenchmark } from '../../shared/rectanglePlatformAdapters.js';
 
-const appHeight = 1080;
-const appWidth = 1920;
+const rectangleMode = window.location.hash === '#rectangles';
+const appHeight = rectangleMode ? 540 : 1080;
+const appWidth = rectangleMode ? 1000 : 1920;
 
 const renderer = new RendererMain({
     appWidth: appWidth,
     appHeight: appHeight,
-    clearColor: 0x00000000,
+    clearColor: rectangleMode ? 0xffffffff : 0x00000000,
     numImageWorkers: 1,
     renderEngine: CanvasCoreRenderer,
     fontEngines: [ CanvasTextRenderer ],
@@ -381,6 +383,8 @@ if (hash === 'memory') {
 } else if (hash === 'startup') {
     console.log('Running startup benchmark');
     runStartupBenchmark();
+} else if (hash === 'rectangles') {
+    runRendererRectangleBenchmark(renderer, rootNode);
 } else {
     runBenchmark();
 }

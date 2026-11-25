@@ -9,6 +9,7 @@ import { adjectives, nouns } from '../../shared/data';
 import { warmup } from '../../shared/utils/warmup';
 import { reportStartup } from '../../shared/utils/startup.js';
 import { run } from '../../shared/utils/run.js';
+import { runRectangleBenchmark } from '../../shared/rectangleBenchmark.js';
 
 // apply CSS styling
 const style = document.createElement('style');
@@ -35,13 +36,13 @@ const pick = dict => dict[Math.round(Math.random() * 1000) % dict.length];
 
 const options = {
     stage: {
-        w: 1920,
-        h: 1080,
-        clearColor: 0x00000000,
+        w: window.location.hash === '#rectangles' ? 1000 : 1920,
+        h: window.location.hash === '#rectangles' ? 540 : 1080,
+        clearColor: window.location.hash === '#rectangles' ? 0xFFFFFFFF : 0x00000000,
         canvas2d: false,
         useImageWorker: true,
-        pauseRafLoopOnIdle: true,
-        // bufferSize: 4e6, // WvB tried to raise this to 4M but it didn't work for the 20k items test
+        pauseRafLoopOnIdle: window.location.hash === '#rectangles' ? false : true,
+        bufferMemory: window.location.hash === '#rectangles' ? 32e6 : 2e6,
     },
     debug: false,
 }
@@ -79,7 +80,9 @@ export class App extends Lightning.Application {
     _init() {
         // get hash of the url
         const hash = window.location.hash.substring(1);
-        if (hash === 'memory') {
+        if (hash === 'rectangles') {
+            this.runRectangleBenchmark();
+        } else if (hash === 'memory') {
             console.log('Running memory benchmark');
             this.createMemoryBenchmark();
         } else if (hash === 'startup') {
@@ -88,6 +91,40 @@ export class App extends Lightning.Application {
         } else {
             this.runBenchmark();
         }
+    }
+
+    async runRectangleBenchmark() {
+        const items = this.tag('Items').childList;
+        await runRectangleBenchmark({
+            crossCheckRaf: true,
+            subscribeFrame: (callback) => {
+                this.stage.on('frameStart', callback);
+                return () => this.stage.off('frameStart', callback);
+            },
+            drawScene: (scene) => {
+                if (scene.count > 16000) {
+                    throw new Error('Lightning 2 supports at most 16,000 rectangles; this slice is unsupported.');
+                }
+                items.clear();
+                for (let i = 0; i < scene.count; i++) {
+                    items.add({
+                        type: Rectangle,
+                        data: {
+                            x: scene.x[i] - scene.size[i] / 2,
+                            y: scene.y[i] - scene.size[i] / 2,
+                            size: scene.size[i],
+                        },
+                    });
+                }
+
+                const rectangles = Array.from({ length: scene.count }, (_, i) => items.getAt(i));
+                return (frameScene) => {
+                    for (let i = 0; i < rectangles.length; i++) {
+                        rectangles[i].patch({ x: frameScene.x[i] - frameScene.size[i] / 2 });
+                    }
+                };
+            },
+        });
     }
 
     _createRow(items, index) {
@@ -411,6 +448,25 @@ export class App extends Lightning.Application {
         // });
 
         console.log('Memory!', undefined);
+    }
+}
+
+class Rectangle extends Lightning.Component {
+    static _template() {
+        return {
+            rect: true,
+            color: 0xFFFFFFFF,
+            shader: {
+                type: Lightning.shaders.Outline,
+                width: 1,
+                color: 0xFF000000,
+            },
+        };
+    }
+
+    _init() {
+        const { x, y, size } = this.data;
+        this.patch({ x, y, w: size, h: size });
     }
 }
 

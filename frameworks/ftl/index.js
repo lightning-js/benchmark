@@ -2,25 +2,37 @@ import renderer from 'ftl';
 import browser from 'ftl/platform/browser';
 import webgl from 'ftl/renderer/webgl';
 import msdfTextEngine from 'ftl/text/msdf';
-import { DefaultRectShader, DefaultTextureShader, MsdfTextShader } from 'ftl/shaders';
+import { BorderShader, DefaultRectShader, DefaultTextureShader, MsdfTextShader } from 'ftl/shaders';
 import { createShader } from 'ftl/shaders/create';
 
 import { adjectives, nouns } from '../../shared/data.js';
 import { warmup } from '../../shared/utils/warmup.js';
 import { reportStartup } from '../../shared/utils/startup.js';
 import { run } from '../../shared/utils/run.js';
+import { runFtlRectangleBenchmark } from '../../shared/rectanglePlatformAdapters.js';
+
+const borderShader = createShader(BorderShader);
+borderShader.width = 1;
+borderShader.color = [0, 0, 0, 1];
+borderShader.align = 0.5;
 
 const shaders = {
   rectangleShader: createShader(DefaultRectShader),
   textureShader: createShader(DefaultTextureShader),
   msdfTextShader: createShader(MsdfTextShader),
   bmfTextShader: null,
-  additionalShaders: [],
+  additionalShaders: [borderShader],
 }
 
 //DefaultBatchShader.setMaxTextures(16)
 const canvas = document.querySelector('canvas')
-const { root, createElement, createText, signals, loadFont } = renderer({
+if (window.location.hash === '#rectangles') {
+  canvas.width = 1000;
+  canvas.height = 540;
+  canvas.style.width = '1000px';
+  canvas.style.height = '540px';
+}
+const app = renderer({
   platform: browser,
   renderer: webgl(canvas, shaders),
   text: {
@@ -36,6 +48,7 @@ const { root, createElement, createText, signals, loadFont } = renderer({
     numImageWorkers: 0
   }
 });
+const { root, createElement, createText, signals, loadFont } = app;
 
 
 const colours = [
@@ -387,6 +400,8 @@ if (hash === 'memory') {
   createMemoryBenchmark();
 } else if (hash === 'startup') {
   runStartupBenchmark();
+} else if (hash === 'rectangles') {
+  runFtlRectangleBenchmark({ app, root: rootNode, signals, createElement, BorderShader, createShader, borderShader });
 } else {
   runBenchmark();
 }

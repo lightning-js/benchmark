@@ -7,12 +7,19 @@ import { adjectives, nouns } from '../../shared/data.js';
 import { warmup } from '../../shared/utils/warmup.js';
 import { reportStartup } from '../../shared/utils/startup.js';
 import { run } from '../../shared/utils/run.js';
+import { runFtlRectangleBenchmark } from '../../shared/rectanglePlatformAdapters.js';
 
 
 const canvas = document.querySelector('canvas')
+if (window.location.hash === '#rectangles') {
+  canvas.width = 1000;
+  canvas.height = 540;
+  canvas.style.width = '1000px';
+  canvas.style.height = '540px';
+}
 // const ctx = canvas.getContext('2d');
 
-const { root, createElement, createText, signals, loadFont } = renderer({
+const app = renderer({
   platform: browserPlatform,
   renderer: canvasRenderer(canvas, {
     sortChildrenByZ: false,
@@ -29,6 +36,7 @@ const { root, createElement, createText, signals, loadFont } = renderer({
     numImageWorkers: 0,
   }
 });
+const { root, createElement, createText, signals, loadFont } = app;
 
 const fontLoadedPromise = loadFont('bitmap', {
   family: 'ArialBMF',
@@ -369,6 +377,8 @@ fontLoadedPromise.then(() => {
     createMemoryBenchmark();
   } else if (hash === 'startup') {
     runStartupBenchmark();
+  } else if (hash === 'rectangles') {
+    runFtlRectangleBenchmark({ app, root: rootNode, signals, createElement });
   } else {
     runBenchmark();
   }

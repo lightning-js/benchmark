@@ -19,6 +19,7 @@ import Blits from '@lightningjs/blits'
 
 import Benchmark from './pages/Benchmark.js'
 import Memory from './pages/Memory.js'
+import Rectangles from './pages/Rectangles.js'
 import symbols from '@lightningjs/blits/symbols'
 import { setRenderer } from './perf.js'
 
@@ -35,6 +36,7 @@ export default Blits.Application({
     // mounts Memory). Benchmark.ready branches on the hash and runs the
     // cold-startup measurement instead of the throughput sequence.
     { path: '/startup', component: Benchmark },
+    { path: '/rectangles', component: Rectangles },
   ],
   hooks: {
     async ready() {
