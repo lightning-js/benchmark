@@ -17,6 +17,7 @@
 
 import fs from 'fs';
 import { getOSInfo, getSystemInfo } from "./systemInfo.js";
+import { renderRectangleSection } from './rectangleResults.js';
 
 const indexHeader = `<!DOCTYPE html>
     <html lang="en">
@@ -286,10 +287,11 @@ export const writeResults = (results, frameworkVersions, browserVersion) => {
         const hasMemory = frameworks.some(f => results[f].memory);
         const hasStartup = frameworks.some(f => results[f].startup);
         const hasFileSize = frameworks.some(f => results[f].fileSize !== undefined);
+        const hasRectangles = frameworks.some(f => results[f].rectangles);
 
         // write the results header with only the relevant descriptions
         fileStream.write(resultsHeader.replace('{{resultsDescription}}',
-            `${hasOps ? opsDescription : ''}${hasStartup ? startupDescription : ''}`
+            `${hasOps ? opsDescription : ''}${hasStartup ? startupDescription : ''}${hasRectangles ? '<p>Rectangle rendering: average callback FPS (higher is better), 6x CPU slowdown, 1000x540 drawing area. Reported separately from the weighted operation score; expand a cell for frame-pacing and failure details.</p>' : ''}`
         ));
 
         // write some html
@@ -371,6 +373,10 @@ export const writeResults = (results, frameworkVersions, browserVersion) => {
             );
         }
 
+        if (hasRectangles) {
+            sections.push(renderRectangleSection(results, frameworks, frameworkVersions));
+        }
+
         fileStream.write(table.replace('{{sections}}', sections.join('\n')));
         
         // write the footer
@@ -385,4 +391,3 @@ export const writeResults = (results, frameworkVersions, browserVersion) => {
         });
     }); 
 }
-

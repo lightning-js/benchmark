@@ -19,8 +19,14 @@ import Blits from '@lightningjs/blits'
 import App from './App.js'
 
 Blits.Launch(App, 'app', {
-  w: 1920,
-  h: 1080,
+  w: window.location.hash.includes('rectangles') ? 1000 : 1920,
+  h: window.location.hash.includes('rectangles') ? 540 : 1080,
+  ...(window.location.hash.includes('rectangles') ? {
+    pixelRatio: 1,
+    renderQuality: 1,
+    canvasColor: 'white',
+    advanced: { quadBufferSize: 16 * 1024 * 1024 },
+  } : {}),
   multithreaded: false,
   debugLevel: 1,
   fonts: [

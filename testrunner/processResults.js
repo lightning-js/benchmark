@@ -10,9 +10,10 @@
  * @param {MemoryResults} memoryResults - The memory results object.
  * @param {FileSizeResultsObject} fileSizeResults - The file size results object.
  * @param {StartupResultsObject} [startupResults] - The startup results object.
+ * @param {Object} [rectangleResults] - Raw rectangle slices per framework/count.
  * @returns {Object} - The processed and sorted results object.
  */
-export const processResults = (results, memoryResults, fileSizeResults, startupResults = {}) => {
+export const processResults = (results, memoryResults, fileSizeResults, startupResults = {}, rectangleResults = {}) => {
     const processedResults = {};
     const fastestTimes = {
         create: null,
@@ -102,6 +103,11 @@ export const processResults = (results, memoryResults, fileSizeResults, startupR
     frameworks.forEach(f => {
         if (startupCells[f]) {
             processedResults[f].startup = startupCells[f];
+        }
+        // FPS and its diagnostics are reported independently, not mixed into
+        // the duration-based weighted operation score or framework ordering.
+        if (rectangleResults[f]) {
+            processedResults[f].rectangles = rectangleResults[f];
         }
     });
 
