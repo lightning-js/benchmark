@@ -2,7 +2,7 @@ import { createRectangleAdapter, runRectangleBenchmark } from './rectangleBenchm
 
 const FTL_RECT_COLOR = [0, 0, 0, 1];
 
-export const runFtlRectangleBenchmark = async ({ app, root, signals, createElement, BorderShader, createShader, borderShader }) => {
+export const runFtlRectangleBenchmark = async ({ app, root, signals, createElement, RectShader, createShader, rectShader }) => {
   const rectangles = [];
   app.addActiveCheck(() => rectangles.length > 0);
   return runRectangleBenchmark({
@@ -16,11 +16,11 @@ export const runFtlRectangleBenchmark = async ({ app, root, signals, createEleme
         const size = scene.size[i];
         const rects = [];
         rectangles.push(rects);
-        if (BorderShader) {
-          const shader = createShader(BorderShader);
+        if (RectShader) {
+          const shader = createShader(RectShader);
           shader.width = 1;
-          shader.color = borderShader.color;
-          shader.align = 0.5;
+          shader.color = rectShader.color;
+          if ('align' in shader) shader.align = 0.5;
           const rect = createElement({
             x: scene.x[i],
             y: scene.y[i],
@@ -62,8 +62,15 @@ export const runFtlRectangleBenchmark = async ({ app, root, signals, createEleme
       return (frameScene) => {
         for (let i = 0; i < rectangles.length; i++) {
           for (const rect of rectangles[i]) {
-            rect.x = frameScene.x[i];
-            rect.dirty();
+            // FTL's position-only fast path (updateWorldStatePosition) is only
+            // taken via setPosition(); plain x= + dirty() stays on the general
+            // resolver by design.
+            if (typeof rect.setPosition === 'function') {
+              rect.setPosition(frameScene.x[i], frameScene.y[i]);
+            } else {
+              rect.x = frameScene.x[i];
+              rect.dirty();
+            }
           }
         }
       };

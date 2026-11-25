@@ -2,7 +2,7 @@ import renderer from 'ftl';
 import browser from 'ftl/platform/browser';
 import webgl from 'ftl/renderer/webgl';
 import msdfTextEngine from 'ftl/text/msdf';
-import { BorderShader, DefaultRectShader, DefaultTextureShader, MsdfTextShader } from 'ftl/shaders';
+import { OutlineShader, DefaultRectShader, DefaultTextureShader, MsdfTextShader } from 'ftl/shaders';
 import { createShader } from 'ftl/shaders/create';
 
 import { adjectives, nouns } from '../../shared/data.js';
@@ -11,17 +11,16 @@ import { reportStartup } from '../../shared/utils/startup.js';
 import { run } from '../../shared/utils/run.js';
 import { runFtlRectangleBenchmark } from '../../shared/rectanglePlatformAdapters.js';
 
-const borderShader = createShader(BorderShader);
-borderShader.width = 1;
-borderShader.color = [0, 0, 0, 1];
-borderShader.align = 0.5;
+const outlineShader = createShader(OutlineShader);
+outlineShader.width = 1;
+outlineShader.color = [0, 0, 0, 1];
 
 const shaders = {
   rectangleShader: createShader(DefaultRectShader),
   textureShader: createShader(DefaultTextureShader),
   msdfTextShader: createShader(MsdfTextShader),
   bmfTextShader: null,
-  additionalShaders: [borderShader],
+  additionalShaders: [outlineShader],
 }
 
 //DefaultBatchShader.setMaxTextures(16)
@@ -401,7 +400,7 @@ if (hash === 'memory') {
 } else if (hash === 'startup') {
   runStartupBenchmark();
 } else if (hash === 'rectangles') {
-  runFtlRectangleBenchmark({ app, root: rootNode, signals, createElement, BorderShader, createShader, borderShader });
+  runFtlRectangleBenchmark({ app, root: rootNode, signals, createElement, RectShader: OutlineShader, createShader, rectShader: outlineShader });
 } else {
   runBenchmark();
 }

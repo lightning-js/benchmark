@@ -387,7 +387,7 @@ fontLoadedPromise.then(() => {
   } else if (hash === 'startup') {
     runStartupBenchmark();
   } else if (hash === 'rectangles') {
-    runFtlRectangleBenchmark({ app, root: rootNode, signals, createElement, BorderShader, createShader, borderShader });
+    runFtlRectangleBenchmark({ app, root: rootNode, signals, createElement, RectShader: BorderShader, createShader, rectShader: borderShader });
   } else {
     runBenchmark();
   }
